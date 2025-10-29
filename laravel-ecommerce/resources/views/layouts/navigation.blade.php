@@ -12,36 +12,50 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    @auth
-                        @if (Auth::user()->role === 'admin')
+                @auth
+                @if (Auth::user()->role === 'admin')
 
-                            <!-- {{-- Added admin dashboard for Admin --}} -->
-                            <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
-                                {{ __('Admin Dashboard') }}
-                            </x-nav-link>
-                            
-                            <!-- {{-- Added manage user for Admin --}} -->
-                            <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
-                                {{ __('Manage Users') }}
-                            </x-nav-link>
+                    <!-- Admin Panel Links -->
+                    <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
+                        {{ __('Admin Dashboard') }}
+                    </x-nav-link>
 
-                            <!-- {{-- Added Categories for Admin --}} -->
-                            <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
-                                {{ __('Manage Categories') }}
-                            </x-nav-link>
+                    <x-nav-link :href="route('admin.users')" :active="request()->routeIs('admin.users')">
+                        {{ __('Manage Users') }}
+                    </x-nav-link>
 
-                            <!-- {{-- Added Products for Admin--}} -->
-                             <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                                {{ __('Manage Products') }}
-                             </x-nav-link>
-                        @else
-                            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                                {{ __('My Dashboard') }}
-                            </x-nav-link>
-                        @endif
-                    @endauth
-                </div>
-            </div>
+                    <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                        {{ __('Manage Categories') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
+                        {{ __('Manage Products') }}
+                    </x-nav-link>
+
+            @else
+                <!-- Product List -->
+                <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
+                    {{ __('All Products') }}
+                </x-nav-link>
+
+                <!-- Customer Dashboard -->
+                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('My Dashboard') }}
+                </x-nav-link>
+                <!-- Cart -->
+                <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                    {{ __('Cart') }}
+                </x-nav-link>
+
+                <x-nav-link :href="route('wishlist.index')" :active="request()->routeIs('wishlist.index')">
+                    {{ __('Wishlist')}}
+                </x-nav-link>
+
+            @endif
+            @endauth
+        </div>
+                
+    </div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -78,4 +92,15 @@
             </div>
         </div>
     </div>
+    @if (session('success'))
+    <div class="max-w-lg mx-auto mt-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    @if (session('warning'))
+    <div class="max-w-lg mx-auto mt-4 px-4 py-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
+        {{ session('warning') }}
+    </div>
+    @endif
 </nav>

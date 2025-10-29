@@ -6,6 +6,9 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\FrontProductController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\CartController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,6 +41,29 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class,'password'])->name('profile.password');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Wishlist routes
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/add/{product}', [WishlistController::class, 'add'])->name('wishlist.add');
+    Route::delete('/wishlist/remove/{product}', [WishlistController::class, 'remove'])->name('wishlist.remove');
+
 });
 
+// Product list routes (for frontend display)
+Route::get('/products', [FrontProductController::class, 'products'])->name('products.index');
+Route::get('/category/{slug}', [FrontProductController::class, 'category'])->name('products.category');
+Route::get('/product/{slug}', [FrontProductController::class, 'show'])->name('product.show');
+Route::get('/search', [FrontProductController::class, 'search'])->name('products.search');
+
+// Cart Routes
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update/{product}', [CartController::class, 'update'])->name('cart.update');
+Route::get('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/clear-cart', function() {
+    session()->forget('cart');
+    return 'Cart Cleared';
+});
 require __DIR__.'/auth.php';
+
+    
