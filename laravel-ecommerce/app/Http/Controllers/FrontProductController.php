@@ -6,13 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 
+
 class FrontProductController extends Controller
 {
-    // Home page
-    public function home(){
-        $featured=Product::latest()->take(8)->get();
-        return view('frontend.home',compact('featured'));
-    }
 
     // All products
     public function products(Request $request){
@@ -57,7 +53,7 @@ class FrontProductController extends Controller
         }
 
         $query->orderBy('created_at', 'desc');
-        $products = $query->paginate(12);
+        $products = $query->paginate(12)->appends($request->query());
 
         return view('frontend.products.index', compact('categories', 'products'));
     }

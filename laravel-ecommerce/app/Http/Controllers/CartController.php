@@ -25,26 +25,34 @@ class CartController extends Controller
         
         else {
             $cart[$product->id] = [
-                'title'        => $product->title,
+                'title' => $product->title,
                 'original_price' => $product->price,
-                'price'        => $discountedPrice,
-                'discount'     => $product->discount,
-                'qty'          => 1
+                'price'=> $discountedPrice,
+                'discount'=> $product->discount,
+                'qty'=> 1,
+                'stock' => $product->stock,
             ];
         }
 
         session()->put('cart', $cart);
 
-        return redirect()->route('cart.index')->with('success', 'Product added to cart!');
+        return redirect()->back()->with('success', 'Product added to cart!');
     }
 
-    public function update(Request $request, Product $product)
+    public function update(Request $request, $id)
     {
         $cart = session()->get('cart', []);
-        $cart[$product->id]['qty'] = $request->qty;
 
-        session()->put('cart', $cart);
-        return back()->with('success', 'Cart Updated!');
+        if(isset($cart[$id])) {
+            $maxStock = $cart[$id]['stock'];
+
+            $qty = min($request->qty, $maxStock); 
+            $cart[$id]['qty'] = $qty;
+
+            session()->put('cart', $cart);
+    }
+
+    return back()->with('success', 'Cart updated!');
     }
 
     public function remove(Product $product)

@@ -1,5 +1,16 @@
 <x-app-layout>
 <div class="container mx-auto p-6">
+    @if (session('success'))
+        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <a href="{{ route('products.index') }}" class="text-blue-600 hover:underline mb-4 inline-block">
         ← Back to Shop
@@ -81,23 +92,36 @@
             <p class="text-gray-800 mb-2"><strong>Stock:</strong> {{ $product->stock }} units</p>
             <p class="text-gray-800 mb-4"><strong>SKU:</strong> {{ $product->sku }}</p>
 
-            <!-- Add to Cart Button -->
-            <form action="{{ route('cart.add', $product->id) }}" method="POST" class="inline-block">
+            <div class="flex items-center gap-3 mt-3">
+
+            <!-- {{-- Add to Cart / Out of Stock --}} -->
+            @if($product->stock > 0)
+            <form action="{{ route('cart.add', $product->id) }}" method="POST">
             @csrf
-            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+            <button type="submit"
+                class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition">
                 Add to Cart
             </button>
             </form>
 
-            <!-- Wishlist button -->
-            <form action="{{ route('wishlist.add', $product->id) }}" method="POST" class="inline-block ml-3">
+            @else
+            <span class="px-4 py-2 rounded-lg bg-red-600 text-white font-medium">
+                Out of Stock
+            </span>
+            @endif
+
+
+            <!-- {{-- Wishlist Button --}} -->
+            <form action="{{ route('wishlist.add', $product->id) }}" method="POST">
             @csrf
-            <button type="submit" class="text-red-600 border border-red-600 px-4 py-2 rounded hover:bg-red-600 hover:text-white transition">
-                ❤️ Add to Wishlist
+            <button type="submit"
+            class="px-4 py-2 rounded-lg border border-red-600 text-red-600 font-medium hover:bg-red-600 hover:text-white transition flex items-center gap-1">
+                ❤️ Wishlist
             </button>
             </form>
 
         </div>
+            
     </div>
 </div>
 

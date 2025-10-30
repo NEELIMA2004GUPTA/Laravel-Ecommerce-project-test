@@ -4,6 +4,17 @@
         <h2 class="fw-bold text-center text-primary mb-5">
             <i class="bi bi-people-fill me-2"></i> Manage Users
         </h2>
+        @if (session('success'))
+        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
+            {{ session('error') }}
+        </div>
+    @endif
 
         {{-- Success Message --}}
         @if (session('status'))

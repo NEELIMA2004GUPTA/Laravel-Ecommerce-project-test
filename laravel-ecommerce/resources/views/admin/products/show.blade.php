@@ -1,5 +1,16 @@
 <x-app-layout>
 <div class="container mx-auto p-6">
+    @if (session('success'))
+        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
+            {{ session('error') }}
+        </div>
+    @endif
     <a href="{{ route('admin.products.index') }}" class="text-blue-600 hover:underline mb-4 inline-block">
         ← Back to Products
     </a>

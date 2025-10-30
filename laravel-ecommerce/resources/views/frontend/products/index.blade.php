@@ -1,4 +1,5 @@
 <x-app-layout>
+    
 <div class="max-w-7xl mx-auto py-10 px-4" x-data="{ openFilters: false }">
 
     <!-- Page Title + Search -->
@@ -75,8 +76,8 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @foreach($products as $product)
                     @php
-                        $img = json_decode($product->images ?? '[]', true);
-                        $img = $img[0] ?? null;
+                        $imgArray = is_array($product->images) ? $product->images : json_decode($product->images, true);
+                        $img = $imgArray[0] ?? null;
                     @endphp
 
                     <a href="{{ route('product.show', $product->slug) }}"
@@ -115,7 +116,6 @@
                     </a>
                 @endforeach
             </div>
-
             <div class="mt-8">
                 {{ $products->links() }}
             </div>

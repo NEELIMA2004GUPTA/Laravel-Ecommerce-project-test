@@ -105,7 +105,8 @@ class ProductController extends Controller
         ]);
 
         // Handle Remove Old Images
-        $existingImages = json_decode($product->images, true) ?? [];
+        $existingImages = is_array($product->images) ? $product->images : json_decode($product->images, true);
+        $existingImages = $existingImages ?? [];
 
         if ($request->has('remove_images')) {
             foreach ($request->remove_images as $imgToRemove) {

@@ -32,6 +32,10 @@
                         {{ __('Manage Products') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('admin.orders')" :active="request()->routeIs('admin.orders.*')">
+                        {{ __('Manage Orders') }}
+                    </x-nav-link>
+
             @else
                 <!-- Product List -->
                 <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
@@ -49,6 +53,10 @@
 
                 <x-nav-link :href="route('wishlist.index')" :active="request()->routeIs('wishlist.index')">
                     {{ __('Wishlist')}}
+                </x-nav-link>
+
+                <x-nav-link :href="route('orders')" :active="request()->routeIs('orders')">
+                    {{ __('My Orders')}}
                 </x-nav-link>
 
             @endif
@@ -76,6 +84,13 @@
                             <x-dropdown-link :href="route('profile.edit')">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
+                            @auth
+                                @if (Auth::user()->role === 'admin')
+                                    <x-dropdown-link :href="route('admin.coupons.index')">
+                                        {{ __('Coupons') }}
+                                    </x-dropdown-link>
+                                @endif
+                            @endauth
 
                             <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}">
@@ -92,15 +107,4 @@
             </div>
         </div>
     </div>
-    @if (session('success'))
-    <div class="max-w-lg mx-auto mt-4 px-4 py-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-        {{ session('success') }}
-    </div>
-    @endif
-
-    @if (session('warning'))
-    <div class="max-w-lg mx-auto mt-4 px-4 py-3 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg">
-        {{ session('warning') }}
-    </div>
-    @endif
 </nav>

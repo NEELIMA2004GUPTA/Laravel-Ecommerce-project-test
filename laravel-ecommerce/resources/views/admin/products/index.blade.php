@@ -1,6 +1,17 @@
 <x-app-layout>
 <div class="container mx-auto p-6">
     <h2 class="text-2xl font-bold mb-4">Products</h2>
+    @if (session('success'))
+        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <a href="{{ route('admin.products.create') }}" 
        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4 inline-block">

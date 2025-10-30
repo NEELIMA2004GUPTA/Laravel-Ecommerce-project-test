@@ -12,6 +12,7 @@
     @endif
 
     <h2 class="text-2xl font-bold mb-4">Edit Product</h2>
+    
 
     <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
