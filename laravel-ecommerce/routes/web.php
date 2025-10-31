@@ -14,6 +14,7 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\MyDashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,6 +50,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
     // Coupons
     Route::resource('coupons', CouponController::class);
 
+    // Notifications
+    Route::get('notifications', function () {
+    $user = Auth::user();
+    $user->unreadNotifications->markAsRead();
+
+    $notifications = $user->notifications;
+    return view('admin.notifications.index', compact('notifications'));
+})->name('notifications');
+
 });
 
 Route::middleware('auth')->group(function () {
@@ -68,6 +78,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/apply-coupon', [CouponController::class, 'applyCoupon'])->name('apply.coupon');
     Route::get('/remove-coupon', [CouponController::class, 'removeCoupon'])->name('remove.coupon');
+
+    Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
 
 });
 

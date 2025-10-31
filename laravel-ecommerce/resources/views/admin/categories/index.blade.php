@@ -1,19 +1,14 @@
 <x-app-layout>
 <div class="container mx-auto p-6">
     <h2 class="text-2xl font-bold mb-4">Categories</h2>
-    @if (session('success'))
-        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
     <a href="{{ route('admin.categories.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded mb-4 inline-block">+ Add Category</a>
 
+    <form action="{{ route('admin.categories.index') }}" method="GET">
+        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search category..."
+               class="border px-3 py-2 rounded-lg">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Search</button>
+    </form>
+    <br>
     <table class="min-w-full border">
         <thead class="bg-gray-100">
             <tr>

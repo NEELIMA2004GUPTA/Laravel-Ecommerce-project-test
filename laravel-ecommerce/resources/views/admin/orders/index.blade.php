@@ -1,17 +1,26 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-10 px-6">
         <h1 class="text-2xl font-bold mb-6">Manage Orders</h1>
-     @if (session('success'))
-        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
-            {{ session('success') }}
-        </div>
-    @endif
+        <form method="GET" action="{{ route('admin.orders') }}" class="mb-4 flex gap-3">
 
-    @if (session('error'))
-        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search by Customer Name"
+            class="border p-2 rounded w-60">
+
+            <select name="status" class="border p-2 rounded w-52">
+                <option value="">All Status</option>
+                <option value="Pending" {{ $status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Confirmed" {{ $status == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="Shipped" {{ $status == 'Shipped' ? 'selected' : '' }}>Shipped</option>
+                <option value="Delivered" {{ $status == 'Delivered' ? 'selected' : '' }}>Delivered</option>
+                <option value="Cancelled" {{ $status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+            </select>
+
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                Filter
+            </button>
+
+        </form>
+        <br>
 
         <table class="w-full bg-white shadow rounded-lg overflow-hidden">
             <thead class="bg-gray-100">

@@ -18,9 +18,13 @@
         + Add Product
     </a>
 
-    @if(session('success'))
-        <div class="bg-green-100 text-green-800 p-3 mb-4 rounded">{{ session('success') }}</div>
-    @endif
+    <form method="GET" action="{{ route('admin.products.index') }}" class="flex gap-2">
+        <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Search products..."
+               class="border px-3 py-2 rounded-lg w-72 focus:ring-blue-500 focus:border-blue-500">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            Search
+        </button>
+    </form><br>
 
     <table class="min-w-full border text-sm">
         <thead class="bg-gray-100">

@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\OrderItem;
 use App\Models\Coupon;
+use App\Models\User;
+use App\Notifications\NewOrderNotification;
 
 class CheckoutController extends Controller
 {
@@ -48,6 +50,11 @@ class CheckoutController extends Controller
             'notes' => $request->notes ?? null,
             'total' => $total,
         ]);
+
+        $admin = User::where('role', 'admin')->first();
+        if($admin){
+            $admin->notify(new NewOrderNotification($order));
+        }
 
         foreach ($cart as $productId => $item) {
             OrderItem::create([

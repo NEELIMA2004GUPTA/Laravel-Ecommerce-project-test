@@ -35,7 +35,6 @@
                     <x-nav-link :href="route('admin.orders')" :active="request()->routeIs('admin.orders.*')">
                         {{ __('Manage Orders') }}
                     </x-nav-link>
-
             @else
                 <!-- Product List -->
                 <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
@@ -64,6 +63,25 @@
         </div>
                 
     </div>
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+
+            @auth
+            @if(Auth::user()->role === 'admin')
+                @php
+                    $unread = auth()->user()->unreadNotifications;
+                @endphp
+                <div class="relative me-6">
+                <a href="{{ route('admin.notifications') }}" class="relative text-xl">
+                    🔔
+                    @if($unread->count())
+                        <span class="absolute -top-1 -right-2 bg-red-600 text-white text-xs px-2 rounded-full">
+                            {{ $unread->count() }}
+                        </span>
+                    @endif
+                </a>
+            </div>
+            @endif
+            @endauth
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">

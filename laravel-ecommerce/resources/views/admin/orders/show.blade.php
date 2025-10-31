@@ -29,6 +29,7 @@
             <label class="font-semibold">Update Status:</label>
             <select name="status" class="border rounded p-2">
                 <option {{ $order->status == 'Pending' ? 'selected':'' }}>Pending</option>
+                <option {{ $order->status == 'Confirmed' ? 'selected':'' }}>Confirmed</option>
                 <option {{ $order->status == 'Shipped' ? 'selected':'' }}>Shipped</option>
                 <option {{ $order->status == 'Delivered' ? 'selected':'' }}>Delivered</option>
                 <option {{ $order->status == 'Cancelled' ? 'selected':'' }}>Cancelled</option>
@@ -40,25 +41,27 @@
 
         <!-- Order Items -->
         <h2 class="text-xl font-semibold mb-3">Order Items</h2>
-        <div class="bg-white shadow rounded p-6 space-y-4">
-            @foreach($order->items as $item)
-            <div class="flex gap-4 border-b pb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        @foreach($order->items as $item)
+            <div class="flex gap-4 p-3 border rounded-lg hover:shadow">
                 @php
                     $imgs = is_array($item->product->images) ? $item->product->images : json_decode($item->product->images, true);
                     $img = $imgs[0] ?? null;
                 @endphp
-                <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}" class="w-20 h-20 rounded object-cover">
+
+                <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
+                     class="w-20 h-20 rounded object-cover">
 
                 <div>
-                    <p class="font-semibold">{{ $item->product->title }}</p>
-                    <p>Qty: {{ $item->quantity }}</p>
-                    <p>₹{{ $item->price }}</p>
+                    <p class="font-semibold text-gray-800">{{ $item->product->title }}</p>
+                    <p class="text-sm text-gray-600">Qty: {{ $item->quantity }}</p>
+                    <p class="text-blue-600 font-bold">₹{{ $item->price }}</p>
                 </div>
-            @endforeach
-        </div>
-
-        <div class="text-right text-xl font-bold mt-6">
-            Total: ₹{{ $order->total }}
-        </div>
+            </div>
+        @endforeach
     </div>
+    <div class="text-right text-2xl font-bold mt-6 border-t pt-4">
+        Total Amount: <span class="text-green-600">₹{{ $order->total }}</span>
+    </div>
+</div>
 </x-app-layout>

@@ -81,6 +81,14 @@
     </tbody>
 </table>
 
+{{-- CALCULATION --}}
+@php
+    $discountAmount = session('coupon.discount') ?? 0;
+    $subTotal = $total - $discountAmount;
+    $tax = $subTotal * 0.05; // 5% GST
+    $grandTotal = $subTotal + $tax;
+@endphp
+
 {{-- COUPON FORM --}}
 @if(!session()->has('coupon'))
 <form action="{{ route('apply.coupon') }}" method="POST" class="flex gap-2 my-4">
@@ -106,12 +114,22 @@
     @if(session()->has('coupon'))
         <div class="flex justify-between text-green-600 font-semibold my-2">
             <span>Coupon ({{ session('coupon.code') }})</span>
-            <span>- ₹{{ session('coupon.discount') }}</span>
+            <span>- ₹{{ number_format($discountAmount, 2) }}</span>
         </div>
     @endif
 
+    <div class="flex justify-between text-gray-700 my-2">
+        <span>Subtotal:</span>
+        <span>₹{{ number_format($subTotal, 2) }}</span>
+    </div>
+
+    <div class="flex justify-between text-gray-700 my-2">
+        <span>Tax (5% GST):</span>
+        <span>₹{{ number_format($tax, 2) }}</span>
+    </div>
+
     <p class="text-2xl font-bold text-green-600 mt-1">
-        Amount Payable: ₹{{ number_format($total - (session('coupon.discount') ?? 0), 2) }}
+        Amount Payable: ₹{{ number_format($grandTotal, 2) }}
     </p>
 
     <a href="{{ auth()->check() ? route('checkout') : route('login') }}"

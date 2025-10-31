@@ -11,10 +11,20 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::withCount('subcategories')->whereNull('parent_id')->latest()->paginate(10);
-        return view('admin.categories.index', compact('categories'));
+        $search = $request->search;
+
+        $categories = Category::withCount('subcategories')
+            ->whereNull('parent_id')
+            ->when($search, function($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends($request->query()); 
+
+        return view('admin.categories.index', compact('categories', 'search'));
     }
 
     /**

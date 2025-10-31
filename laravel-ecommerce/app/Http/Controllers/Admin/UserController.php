@@ -8,10 +8,25 @@ use App\Models\User;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::where('role', '!=', 'admin')->get();
-        return view('admin.users.index', compact('users'));
+        $search = $request->search;
+        $status = $request->status; 
+
+        $users = User::when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+                });
+            })
+            ->when($status, function($query) use ($status) {
+                $query->where('is_blocked', $status == 'blocked' ? 1 : 0);
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends($request->query());
+
+        return view('admin.users.index', compact('users', 'search', 'status'));
     }
 
     // Toggle block/unblock

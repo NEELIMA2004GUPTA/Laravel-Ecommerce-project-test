@@ -2,17 +2,18 @@
     <div class="max-w-6xl mx-auto px-4 py-10">
 
         <h1 class="text-3xl font-bold mb-8">My Orders</h1>
-     @if (session('success'))
-        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @if (session('error'))
-        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
+        @if (session('success'))
+            <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
+                {{ session('error') }}
+            </div>
+        @endif
 
         @if($orders->count() == 0)
             <div class="text-center py-20">
@@ -26,35 +27,40 @@
 
                     <!-- Order Header -->
                     <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-semibold">Order #{{ $order->id }}</h2>
-                    <p class="text-sm text-gray-500">
-                        {{ $order->created_at->format('d M Y') }} • {{ $order->created_at->format('l') }}
-                    </p>
+                        <h2 class="text-lg font-semibold">Order #{{ $order->id }}</h2>
+                        <p class="text-sm text-gray-500">
+                            {{ $order->created_at->format('d M Y') }} • {{ $order->created_at->format('l') }}
+                        </p>
 
-                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3">
 
-                    <!-- Status Badge -->
-                    <span class="px-3 py-1 text-sm font-medium rounded-full
-                        @if($order->status == 'Pending') bg-yellow-100 text-yellow-700
-                        @elseif($order->status == 'Shipped') bg-blue-100 text-blue-700
-                        @elseif($order->status == 'Delivered') bg-green-100 text-green-700
-                        @elseif($order->status == 'Cancelled') bg-red-100 text-red-700
-                        @else bg-gray-100 text-gray-700
-                        @endif">
-                        {{ $order->status }}
-                    </span>
+                            <!-- Status Badge -->
+                            <span class="px-3 py-1 text-sm font-medium rounded-full
+                                @if($order->status == 'Pending') bg-yellow-100 text-yellow-700
+                                @elseif($order->status == 'Confirmed') bg-yellow-100 text-yellow-700
+                                @elseif($order->status == 'Shipped') bg-blue-100 text-blue-700
+                                @elseif($order->status == 'Delivered') bg-green-100 text-green-700
+                                @elseif($order->status == 'Cancelled') bg-red-100 text-red-700
+                                @else bg-gray-100 text-gray-700
+                                @endif">
+                                @if($order->status == 'Confirmed')
+                                    Approved
+                                @else
+                                    {{ ucfirst($order->status) }}
+                                @endif
+                            </span>
 
-                    @if(in_array($order->status, ['Pending','Shipped']))
-                    <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
-                    @csrf
-                    <button class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">
-                        Cancel Order
-                    </button>
-                    </form>
-                    @endif
+                            @if(in_array($order->status, ['Pending','Shipped']))
+                                <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
+                                    @csrf
+                                    <button class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">
+                                        Cancel Order
+                                    </button>
+                                </form>
+                            @endif
 
-                </div>
-            </div>
+                        </div>
+                    </div>
 
                     <!-- Order Details -->
                     <div class="text-sm text-gray-600 mt-3">
@@ -73,13 +79,14 @@
                             <div class="flex items-center gap-4 bg-gray-50 rounded-lg p-3 border">
                                 @php
                                     $imgs = is_array($item->product->images)
-                                    ? $item->product->images
-                                    : json_decode($item->product->images, true);
-
+                                        ? $item->product->images
+                                        : json_decode($item->product->images, true);
                                     $img = $imgs[0] ?? null;
                                 @endphp
+
                                 <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
-                                    class="w-16 h-16 object-cover rounded">
+                                     class="w-16 h-16 object-cover rounded">
+
                                 <div>
                                     <p class="font-medium">{{ $item->product->title }}</p>
                                     <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>

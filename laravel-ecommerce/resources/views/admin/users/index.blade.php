@@ -4,17 +4,23 @@
         <h2 class="fw-bold text-center text-primary mb-5">
             <i class="bi bi-people-fill me-2"></i> Manage Users
         </h2>
-        @if (session('success'))
-        <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @if (session('error'))
-        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
+        <form method="GET" action="" class="flex gap-3 mb-4">
+
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search by name or email"
+            class="border rounded px-3 py-2 w-60" />
+
+            <select name="status" class="border rounded px-3 py-2 w-52">
+                <option value="">All Status</option>
+                <option value="unblocked" {{ $status == 'Unblock' ? 'selected' : '' }}>Unblocked Users</option>
+                <option value="blocked" {{ $status == 'Block' ? 'selected' : '' }}>Blocked Users</option>
+            </select>
+
+            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Filter
+            </button>
+        </form>
+        <br>
 
         {{-- Success Message --}}
         @if (session('status'))

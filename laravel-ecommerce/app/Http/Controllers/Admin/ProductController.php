@@ -11,9 +11,22 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     // ---------------------- INDEX ----------------------
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->latest()->paginate(10);
+        $search = $request->search ;
+
+        $products = Product::with('category')
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->appends($request->query()); 
+
         return view('admin.products.index', compact('products'));
     }
 
