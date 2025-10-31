@@ -20,9 +20,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
+});
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
@@ -79,7 +79,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/apply-coupon', [CouponController::class, 'applyCoupon'])->name('apply.coupon');
     Route::get('/remove-coupon', [CouponController::class, 'removeCoupon'])->name('remove.coupon');
 
-    Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
 
 });
 

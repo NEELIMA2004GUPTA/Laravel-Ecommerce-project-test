@@ -15,7 +15,13 @@ class AdminController extends Controller
     {
         $totalUsers = User::count();
         $totalOrders = Order::count();
-        $totalSales = Order::where('status', '!=', 'Cancelled')->sum('total');
+        $totalSales = Order::where('status', 'Delivered')
+            ->get()
+            ->sum(function($order){
+            $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
+            $tax = ($subTotal * 5) / 100;
+        return $subTotal + $tax;
+    });
 
         // Most sold products
         $topProducts = OrderItem::with('product')
@@ -34,33 +40,44 @@ class AdminController extends Controller
 
     public function getSalesData($range)
     {
-        $query = Order::where('status', '!=', 'Cancelled');
+        $orders = Order::where('status', 'Delivered');
 
         if ($range == 'daily') {
-            $data = $query->selectRaw('DATE(created_at) as label, SUM(total) as revenue')
-                          ->whereDate('created_at', '>=', Carbon::now()->subDays(7))
-                          ->groupBy('label')->orderBy('label')->get();
-
-        } elseif ($range == 'weekly') {
-            $data = $query->selectRaw('YEARWEEK(created_at) as label, SUM(total) as revenue')
-                          ->whereDate('created_at', '>=', Carbon::now()->subWeeks(8))
-                          ->groupBy('label')->orderBy('label')->get();
-
-        } elseif ($range == 'monthly') {
-            $data = $query->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as label, SUM(total) as revenue')
-                          ->whereDate('created_at', '>=', Carbon::now()->subMonths(12))
-                          ->groupBy('label')->orderBy('label')->get();
-
-        } else { 
-            $data = $query->selectRaw('YEAR(created_at) as label, SUM(total) as revenue')
-                          ->groupBy('label')->orderBy('label')->get();
+            $orders = $orders->selectRaw('DATE(created_at) as label, id')
+                         ->whereDate('created_at', '>=', Carbon::now()->subDays(7));
+        } 
+        elseif ($range == 'weekly') {
+            $orders = $orders->selectRaw('YEARWEEK(created_at) as label, id')
+                         ->whereDate('created_at', '>=', Carbon::now()->subWeeks(8));
+        } 
+        elseif ($range == 'monthly') {
+            $orders = $orders->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as label, id')
+                         ->whereDate('created_at', '>=', Carbon::now()->subMonths(12));
+        } 
+        else { 
+            $orders = $orders->selectRaw('YEAR(created_at) as label, id');
         }
 
-        // Format labels
-        $data->transform(function ($item) use ($range) {
-            if ($range == 'daily') $item->label = Carbon::parse($item->label)->format('d M');
-            if ($range == 'weekly') $item->label = "Week " . substr($item->label, -2);
-            if ($range == 'monthly') $item->label = Carbon::parse($item->label . '-01')->format('M Y');
+        $orders = $orders->get()->groupBy('label');
+
+        $data = $orders->map(function($group, $label){
+            $revenue = $group->sum(function($order){
+                $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
+                $tax = ($subTotal * 5) / 100;
+                return $subTotal + $tax;
+            });
+
+            return [
+                'label' => $label,
+                'revenue' => round($revenue, 2)
+            ];
+        })->values();
+
+        // Format labels for chart
+        $data = $data->map(function($item) use ($range){
+            if ($range == 'daily') $item['label'] = Carbon::parse($item['label'])->format('d M');
+            if ($range == 'weekly') $item['label'] = "Week " . substr($item['label'], -2);
+            if ($range == 'monthly') $item['label'] = Carbon::parse($item['label'] . '-01')->format('M Y');
             return $item;
         });
 

@@ -38,7 +38,16 @@
                 <tr class="border-b hover:bg-gray-50">
                     <td class="p-3">#{{ $order->id }}</td>
                     <td class="p-3">{{ $order->user->name }}</td>
-                    <td class="p-3">₹{{ $order->total }}</td>
+                    @php
+                        $subTotal = $order->items->sum(function($item){
+                            return $item->quantity * $item->price;
+                        });
+
+                        $tax = ($subTotal * 5) / 100; 
+
+                        $grandTotal = $subTotal + $tax;
+                    @endphp
+                    <td class="p-3">₹{{ number_format($grandTotal, 2) }}</td>
                     <td class="p-3">{{ $order->status }}</td>
                     <td class="p-3">{{ $order->created_at->format('d M, Y') }}</td>
                     <td class="p-3 text-center">

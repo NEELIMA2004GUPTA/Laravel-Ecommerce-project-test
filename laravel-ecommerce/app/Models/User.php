@@ -18,6 +18,10 @@ class User extends Authenticatable implements MustVerifyEmail
      *
      * @var list<string>
      */
+
+    /**
+    * @property \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
+    */
     protected $fillable = [
         'name',
         'email',
@@ -54,9 +58,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Wishlist::class);
     }
 
+
     public function orders()
     {
-        return $this->hasMany(Order::class, 'user_id', 'id');
+        return $this->hasMany(Order::class, 'user_id');
     }
 
 }

@@ -61,7 +61,18 @@
         @endforeach
     </div>
     <div class="text-right text-2xl font-bold mt-6 border-t pt-4">
-        Total Amount: <span class="text-green-600">₹{{ $order->total }}</span>
+    @php
+        $subTotal = $order->items->sum(function($item){
+            return $item->quantity * $item->price;
+        });
+
+        $tax = ($subTotal * 5) / 100; // 18% GST
+
+        $grandTotal = $subTotal + $tax;
+    @endphp
+        <p>Subtotal: ₹{{ number_format($subTotal, 2) }}</p>
+        <p>Tax (5%): ₹{{ number_format($tax, 2) }}</p>
+        <p class="text-green-600">Grand Total: ₹{{ number_format($grandTotal, 2) }}</p>
     </div>
 </div>
 </x-app-layout>

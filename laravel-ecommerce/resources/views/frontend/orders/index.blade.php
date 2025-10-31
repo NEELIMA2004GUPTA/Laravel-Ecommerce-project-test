@@ -96,10 +96,21 @@
                             @endforeach
                         </div>
                     </div>
+                    @php
+                        $subTotal = $order->items->sum(function($item){
+                            return $item->quantity * $item->price;
+                        });
+
+                        $tax = ($subTotal * 5) / 100; 
+
+                        $grandTotal = $subTotal + $tax;
+                    @endphp
 
                     <!-- Total -->
                     <div class="mt-4 text-right text-xl font-bold text-gray-800">
-                        Total Amount: ₹{{ $order->total }}
+                        Subtotal: ₹{{ number_format($subTotal, 2) }} <br>
+                        Tax (5%): ₹{{ number_format($tax, 2) }} <br>
+                        Grand Total: ₹{{ number_format($grandTotal, 2) }}
                     </div>
 
                 </div>
