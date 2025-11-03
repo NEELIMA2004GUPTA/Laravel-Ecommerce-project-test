@@ -36,11 +36,15 @@
                 <td class="p-2 border">₹{{ $coupon->min_amount }}</td>
                 <td class="p-2 border">{{ $coupon->expires_at ?? 'None' }}</td>
                 <td class="p-2 border">
+                @if($coupon->expires_at && now()->greaterThan($coupon->expires_at))
+                    <span class="text-red-600 font-semibold">Expired</span>
+                @else
                     @if($coupon->status)
                         <span class="text-green-600 font-semibold">Active</span>
                     @else
                         <span class="text-red-600 font-semibold">Inactive</span>
                     @endif
+                @endif
                 </td>
                 <td class="p-2 border flex gap-2">
                     <a href="{{ route('admin.coupons.edit', $coupon->id) }}" class="text-blue-600">Edit</a>

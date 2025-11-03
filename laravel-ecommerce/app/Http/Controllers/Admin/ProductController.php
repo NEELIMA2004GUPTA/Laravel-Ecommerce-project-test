@@ -50,7 +50,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'variants' => 'nullable|array',
             'images' => 'nullable|array',   
-            'images.*' => 'image|mimes:jpeg,png,jpg,jfif|max:2048', 
+            'images.*' => 'image|mimes:jpeg,png,jpg,jfif,webp|max:2048', 
         ]);
 
         $data = $request->only(['title', 'description', 'category_id', 'price', 'discount', 'sku', 'stock']);
@@ -103,7 +103,7 @@ class ProductController extends Controller
             'discount' => 'nullable|numeric',
             'sku' => 'required|string',
             'stock' => 'required|integer',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,jfif|max:4096',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,jfif,webp|max:4096',
         ]);
 
         // Update Base Fields
@@ -150,11 +150,19 @@ class ProductController extends Controller
     // ---------------------- DELETE PRODUCT ----------------------
     public function destroy(Product $product)
     {
-        if ($product->images) {
-            foreach (json_decode($product->images) as $img) {
+        if (!empty($product->images)) {
+
+        // Ensure images is always an array
+        $images = is_array($product->images)
+            ? $product->images
+            : json_decode($product->images, true);
+
+        if (is_array($images)) {
+            foreach ($images as $img) {
                 Storage::disk('public')->delete($img);
             }
         }
+    }
 
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', '🗑️ Product deleted!');

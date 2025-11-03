@@ -8,69 +8,97 @@
         </div>
     @endif
 
-    @if (session('error'))
-        <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
-            {{ session('error') }}
-        </div>
-    @endif
-
     <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
         @csrf
 
+        {{-- Title --}}
         <div>
             <label class="block font-medium">Title</label>
-            <input type="text" name="title" class="w-full border rounded px-3 py-2" required>
+            <input type="text" name="title" value="{{ old('title') }}" class="w-full border rounded px-3 py-2">
+            @error('title')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
+        {{-- Description --}}
         <div>
             <label class="block font-medium">Description</label>
-            <textarea name="description" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+            <textarea name="description" rows="3" class="w-full border rounded px-3 py-2">{{ old('description') }}</textarea>
+            @error('description')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
+        {{-- Category --}}
         <div>
             <label class="block font-medium">Category</label>
-            <select name="category_id" class="w-full border rounded px-3 py-2" required>
+            <select name="category_id" class="w-full border rounded px-3 py-2">
                 <option value="">-- Select Category --</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <option value="{{ $category->id }}" @selected(old('category_id') == $category->id)>{{ $category->name }}</option>
                     @foreach ($category->subcategories as $sub)
-                        <option value="{{ $sub->id }}">— {{ $sub->name }}</option>
+                        <option value="{{ $sub->id }}" @selected(old('category_id') == $sub->id)">— {{ $sub->name }}</option>
                     @endforeach
                 @endforeach
             </select>
+            @error('category_id')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
+        {{-- Price & Discount --}}
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block font-medium">Price</label>
-                <input type="number" name="price" step="0.01" class="w-full border rounded px-3 py-2" required>
+                <input type="number" name="price" value="{{ old('price') }}" step="0.01" class="w-full border rounded px-3 py-2">
+                @error('price')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
+
             <div>
                 <label class="block font-medium">Discount (%)</label>
-                <input type="number" name="discount" step="0.01" class="w-full border rounded px-3 py-2">
+                <input type="number" name="discount" value="{{ old('discount') }}" step="0.01" class="w-full border rounded px-3 py-2">
+                @error('discount')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
         </div>
 
+        {{-- SKU & Stock --}}
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block font-medium">SKU</label>
-                <input type="text" name="sku" class="w-full border rounded px-3 py-2" required>
+                <input type="text" name="sku" value="{{ old('sku') }}" class="w-full border rounded px-3 py-2">
+                @error('sku')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
+
             <div>
                 <label class="block font-medium">Stock</label>
-                <input type="number" name="stock" class="w-full border rounded px-3 py-2" required>
+                <input type="number" name="stock" value="{{ old('stock') }}" class="w-full border rounded px-3 py-2">
+                @error('stock')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
         </div>
 
+        {{-- Variants --}}
         <div>
             <label class="block font-medium">Variants (optional)</label>
-            <input type="text" name="variants[]" placeholder="e.g. Size: M, Color: Blue" class="w-full border rounded px-3 py-2 mb-2">
-            <input type="text" name="variants[]" placeholder="e.g. Size: L, Color: Red" class="w-full border rounded px-3 py-2">
+            <input type="text" name="variants[]" class="w-full border rounded px-3 py-2 mb-2">
+            <input type="text" name="variants[]" class="w-full border rounded px-3 py-2">
         </div>
 
+        {{-- Images --}}
         <div>
             <label class="block font-medium">Product Images</label>
             <input type="file" name="images[]" multiple accept="image/*" class="w-full border rounded px-3 py-2">
+            <p>Allowed Image formats - '.jpg, .jpeg, .webp, .jfif, .png' only !</p>
+            @error('images.*')
+                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+            @enderror
         </div>
 
         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">

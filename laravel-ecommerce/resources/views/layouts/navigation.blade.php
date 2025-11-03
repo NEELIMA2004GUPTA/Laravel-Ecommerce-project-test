@@ -41,10 +41,6 @@
                     {{ __('All Products') }}
                 </x-nav-link>
 
-                <!-- Customer Dashboard -->
-                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('My Dashboard') }}
-                </x-nav-link>
                 <!-- Cart -->
                 <x-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
                     {{ __('Cart') }}
@@ -56,6 +52,11 @@
 
                 <x-nav-link :href="route('orders')" :active="request()->routeIs('orders')">
                     {{ __('My Orders')}}
+                </x-nav-link>
+
+                <!-- Customer Dashboard -->
+                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('My Dashboard') }}
                 </x-nav-link>
 
             @endif

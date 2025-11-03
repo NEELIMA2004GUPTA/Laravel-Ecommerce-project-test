@@ -48,7 +48,11 @@ class AuthenticatedSessionController extends Controller
             'email' => 'Your account has been blocked. Contact support.',
             ]);
         }
-        return redirect()->intended('/dashboard');
+        return redirect()->intended(
+            $user->role === 'admin'
+                ? route('admin.dashboard')
+                : route('products.index')
+        );
     }
 
     /**

@@ -14,6 +14,12 @@
 @csrf
 
 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Checkout Details</h2>
+<div class="max-w-2xl mx-auto mb-4">
+    <a href="{{ route('cart.index') }}"
+        class="inline-block text-blue-600 hover:text-blue-800 hover:underline text-sm">
+           ← Back to Cart
+    </a>
+</div>
 
 <div class="space-y-2">
     <label class="block text-gray-600 text-sm font-medium">Full Name</label>

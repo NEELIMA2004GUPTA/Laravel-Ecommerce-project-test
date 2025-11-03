@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -36,7 +37,12 @@ class CartController extends Controller
 
         session()->put('cart', $cart);
 
-        return redirect()->back()->with('success', 'Product added to cart!');
+        if(Auth::check()) {
+            return redirect()->back()->with('success', 'Product added to your cart.');
+        } 
+        else {
+            return redirect()->back()->with('success', 'Product added to cart. Please login to see your cart.');
+        }
     }
 
     public function update(Request $request, $id)
