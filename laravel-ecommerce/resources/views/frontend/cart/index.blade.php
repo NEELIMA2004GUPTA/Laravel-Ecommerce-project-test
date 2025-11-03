@@ -90,12 +90,20 @@
 @endphp
 
 {{-- COUPON FORM --}}
+{{-- COUPON FORM --}}
 @if(!session()->has('coupon'))
-<form action="{{ route('apply.coupon') }}" method="POST" class="flex gap-2 my-4">
+<form action="{{ route('apply.coupon') }}" method="POST" class="my-6 flex items-center gap-3">
     @csrf
-    <input type="text" name="coupon_code" placeholder="Enter coupon code"
-           class="border rounded px-3 py-2 flex-1" required>
-    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+
+    <div class="relative flex-1">
+        <input type="text" name="coupon_code"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition placeholder-gray-400"
+            placeholder="Enter coupon code"
+            required>
+    </div>
+
+    <button type="submit"
+        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-5 py-2 rounded-lg shadow-md transition-transform transform hover:scale-105">
         Apply
     </button>
 </form>
@@ -146,3 +154,5 @@
 </div>
 
 </x-app-layout>
+
+
