@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\MyDashboardController;
+use App\Http\Controllers\ProductReviewController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -78,6 +79,11 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/apply-coupon', [CouponController::class, 'applyCoupon'])->name('apply.coupon');
     Route::get('/remove-coupon', [CouponController::class, 'removeCoupon'])->name('remove.coupon');
+
+    // Product Review
+    Route::get('/products/{product}/review/add', [ProductReviewController::class, 'create'])->name('products.reviews.create');
+    Route::post('/products/{product}/review/store', [ProductReviewController::class, 'store'])->name('products.reviews.store');
+    Route::post('/products/{product}/review/video-upload', [ProductReviewController::class, 'uploadVideo'])->name('products.reviews.uploadVideo');
 
 
 });

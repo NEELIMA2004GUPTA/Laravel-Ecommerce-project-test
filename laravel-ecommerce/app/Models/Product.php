@@ -41,4 +41,19 @@ class Product extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function averageRating()
+    {
+        return round($this->reviews()->avg('rating') ?? 0, 1);
+    }
+
+    public function ratingCount()
+    {
+        return $this->reviews()->count();
+    }
+
 }
