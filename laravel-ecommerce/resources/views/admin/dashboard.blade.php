@@ -175,54 +175,58 @@
     </div>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script type="text/javascript">
-let salesChart = null;
-
-function loadChart(range = 'monthly') {
-    fetch(`/admin/sales-data/${range}`)
-        .then(r => r.json())
-        .then(data => {
-
-            let labels = data.map(i => i.label);
-            let revenues = data.map(i => i.revenue);
-
-            const ctx = document.getElementById('salesChart').getContext('2d');
-
-            if (salesChart) salesChart.destroy();
-
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: "Sales Revenue",
-                        data: revenues,
-                        borderWidth: 2,
-                        tension: 0.4,
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-        });
-}
-
-document.getElementById('rangeSelect').addEventListener('change', e => loadChart(e.target.value));
-loadChart();
-
 document.addEventListener("DOMContentLoaded", function () {
 
-    const ctx = document.getElementById('couponChart').getContext('2d');
+    let salesChart = null;
 
-    const couponData = [
-        {{ $activeCoupons ?? 0 }},
-        {{ $inactiveCoupons ?? 0 }},
-        {{ $expiredCoupons ?? 0 }}
-    ];
+    function loadChart(range = 'monthly') {
+        fetch(`/admin/sales-data/${range}`)
+            .then(r => r.json())
+            .then(data => {
 
-    new Chart(ctx, {
+                let labels = data.map(i => i.label);
+                let revenues = data.map(i => i.revenue);
+
+                const ctx = document.getElementById('salesChart').getContext('2d');
+
+                if (salesChart) salesChart.destroy();
+
+                salesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: "Sales Revenue",
+                            data: revenues,
+                            borderWidth: 2,
+                            tension: 0.4,
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+
+            });
+    }
+
+    // SAFE NOW, because element exists when code runs
+    document.getElementById('rangeSelect').addEventListener('change', e => loadChart(e.target.value));
+    loadChart();
+
+
+    // Coupon Chart
+    const couponCtx = document.getElementById('couponChart').getContext('2d');
+
+    const couponData = JSON.parse(`@json([
+        (int)($activeCoupons ?? 0),
+        (int)($inactiveCoupons ?? 0),
+        (int)($expiredCoupons ?? 0)
+    ])`);
+
+    new Chart(couponCtx, {
         type: 'pie',
         data: {
             labels: ['Active', 'Inactive', 'Expired'],
@@ -241,6 +245,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
 </x-app-layout>
 
 
