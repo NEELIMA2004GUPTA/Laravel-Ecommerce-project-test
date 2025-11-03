@@ -178,22 +178,24 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script type="text/javascript">
+<script>
 document.addEventListener("DOMContentLoaded", function () {
 
     let salesChart = null;
 
     function loadChart(range = 'monthly') {
         fetch(`/admin/sales-data/${range}`)
-            .then(r => r.json())
+            .then(response => response.json())
             .then(data => {
 
-                let labels = data.map(i => i.label);
-                let revenues = data.map(i => i.revenue);
+                const labels = data.map(i => i.label);
+                const revenues = data.map(i => i.revenue);
 
                 const ctx = document.getElementById('salesChart').getContext('2d');
 
-                if (salesChart) salesChart.destroy();
+                if (salesChart !== null) {
+                    salesChart.destroy();
+                }
 
                 salesChart = new Chart(ctx, {
                     type: 'line',
@@ -203,21 +205,26 @@ document.addEventListener("DOMContentLoaded", function () {
                             label: "Sales Revenue",
                             data: revenues,
                             borderWidth: 2,
-                            tension: 0.4,
+                            tension: 0.4
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false 
+                    }
                 });
-
             });
     }
 
-    // SAFE NOW, because element exists when code runs
-    document.getElementById('rangeSelect').addEventListener('change', e => loadChart(e.target.value));
-    loadChart();
+    const rangeSelect = document.getElementById('rangeSelect');
+    if (rangeSelect) {
+        rangeSelect.addEventListener('change', e => loadChart(e.target.value));
+    }
 
+    // ✅ Default Load
+    loadChart('daily');
 
-    // Coupon Chart
+    // ✅ Coupon Chart (Bring inside DOMContentLoaded)
     const couponCtx = document.getElementById('couponChart').getContext('2d');
 
     const couponData = JSON.parse(`@json([
@@ -245,6 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
 
 </x-app-layout>
 

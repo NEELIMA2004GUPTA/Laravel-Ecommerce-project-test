@@ -54,19 +54,19 @@ class AdminController extends Controller
         $orders = Order::where('status', 'Delivered');
 
         if ($range == 'daily') {
-            $orders = $orders->selectRaw('DATE(created_at) as label, id')
+            $orders = $orders->selectRaw('DATE(updated_at) as label, id')
                          ->whereDate('created_at', '>=', Carbon::now()->subDays(7));
         } 
         elseif ($range == 'weekly') {
-            $orders = $orders->selectRaw('YEARWEEK(created_at) as label, id')
+            $orders = $orders->selectRaw('YEARWEEK(updated_at) as label, id')
                          ->whereDate('created_at', '>=', Carbon::now()->subWeeks(8));
         } 
         elseif ($range == 'monthly') {
-            $orders = $orders->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as label, id')
+            $orders = $orders->selectRaw('DATE_FORMAT(updated_at, "%Y-%m") as label, id')
                          ->whereDate('created_at', '>=', Carbon::now()->subMonths(12));
         } 
         else { 
-            $orders = $orders->selectRaw('YEAR(created_at) as label, id');
+            $orders = $orders->selectRaw('YEAR(updated_at) as label, id');
         }
 
         $orders = $orders->get()->groupBy('label');
