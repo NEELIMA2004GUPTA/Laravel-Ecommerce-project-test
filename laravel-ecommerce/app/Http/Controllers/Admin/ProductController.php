@@ -141,7 +141,7 @@ class ProductController extends Controller
         }
 
         // Save final image list
-        $product->images = json_encode(array_values($existingImages));
+        $product->images = array_values($existingImages);
         $product->save();
 
         return redirect()->route('admin.products.index')->with('success', 'Product Updated Successfully');

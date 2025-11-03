@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Store</title>
+    <title>Shoppix</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -30,7 +30,7 @@
 
             <!-- Title -->
             <h1 class="text-5xl font-extrabold text-gray-800 drop-shadow-sm">
-                Welcome to <span class="text-purple-600">Your Store</span>
+                Welcome to <span class="text-purple-600">Shoppix</span>
             </h1>
 
             <p class="mt-3 text-gray-600 text-lg italic">

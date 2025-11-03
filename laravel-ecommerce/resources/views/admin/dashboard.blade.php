@@ -20,21 +20,65 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-fr">
 
                 <div class="p-6 bg-white shadow rounded">
-                    <h3 class="text-lg font-semibold">Total Users</h3>
-                    <p class="text-3xl font-bold">{{ $totalUsers }}</p>
+                <h3 class="text-lg font-semibold mb-4">Total Users Overview</h3>
+
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="p-3 border rounded bg-gray-50">
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-xl font-bold">{{ $totalUsers }}</p>
+                    </div>
+                    <div class="p-3 border rounded bg-green-50">
+                        <p class="text-sm font-medium text-gray-600">Active Users</p>
+                        <p class="text-xl font-bold text-green-700">{{ $activeUsers }}</p>
+                    </div>
+
+                    <div class="p-3 border rounded bg-red-50">
+                        <p class="text-sm font-medium text-gray-600">Blocked Users</p>
+                        <p class="text-xl font-bold text-red-700">{{ $blockedUsers }}</p>
+                    </div>
+
+                 </div>
                 </div>
 
-                <div class="p-6 bg-white shadow rounded">
-                    <h3 class="text-lg font-semibold">Total Orders</h3>
-                    <p class="text-3xl font-bold">{{ $totalOrders }}</p>
-                </div>
+                <div class="p-6 bg-white shadow rounded md:col-span-2">
+                    <!-- Order Overview -->
+                    <h3 class="text-lg font-semibold mb-4">Orders Overview</h3>
+                    <div class="grid grid-cols-5 gap-4 text-center">
 
-                <div class="p-6 bg-white shadow rounded">
-                    <h3 class="text-lg font-semibold">Total Sales</h3>
-                    <p class="text-3xl font-bold">₹{{ number_format($totalSales, 2) }}</p>
+                        <div class="p-3 border rounded bg-yellow-50">
+                            <p class="text-xs font-medium text-gray-600">Pending</p>
+                            <p class="text-xl font-bold text-yellow-700">{{ $pendingOrders }}</p>
+                        </div>
+
+                        <div class="p-3 border rounded bg-blue-50">
+                            <p class="text-xs font-medium text-gray-600">Confirmed</p>
+                            <p class="text-xl font-bold text-blue-700">{{ $confirmedOrders }}</p>
+                        </div>
+
+                        <div class="p-3 border rounded bg-purple-50">
+                            <p class="text-xs font-medium text-gray-600">Shipped</p>
+                            <p class="text-xl font-bold text-purple-700">{{ $shippedOrders }}</p>
+                        </div>
+
+                        <div class="p-3 border rounded bg-green-50">
+                            <p class="text-xs font-medium text-gray-600">Delivered</p>
+                            <p class="text-xl font-bold text-green-700">{{ $deliveredOrders }}</p>
+                        </div>
+
+                        <div class="p-3 border rounded bg-red-50">
+                            <p class="text-xs font-medium text-gray-600">Cancelled</p>
+                            <p class="text-xl font-bold text-red-700">{{ $cancelledOrders }}</p>
+                        </div>
+
+                        <div class="p-3 border rounded bg-gray-50 col-span-5">
+                            <p class="text-xs font-medium text-gray-600">Total</p>
+                            <p class="text-xl font-bold">{{ $totalOrders }}</p>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
@@ -99,10 +143,41 @@
         <canvas id="salesChart"></canvas>
     </div>
 </div>
+<div class="p-6 bg-white shadow rounded md:col-span-2">
+    <h3 class="text-lg font-semibold mb-4">Coupon Summary</h3>
+
+    <div class="grid grid-cols-4 gap-4 text-center">
+        <div class="p-3 border rounded bg-blue-50">
+            <p class="text-sm text-gray-600">Daily</p>
+            <p class="text-xl font-bold text-blue-700">{{ $dailyCoupons }}</p>
+        </div>
+
+        <div class="p-3 border rounded bg-yellow-50">
+            <p class="text-sm text-gray-600">Weekly</p>
+            <p class="text-xl font-bold text-yellow-700">{{ $weeklyCoupons }}</p>
+        </div>
+
+        <div class="p-3 border rounded bg-green-50">
+            <p class="text-sm text-gray-600">Monthly</p>
+            <p class="text-xl font-bold text-green-700">{{ $monthlyCoupons }}</p>
+        </div>
+
+        <div class="p-3 border rounded bg-purple-50">
+            <p class="text-sm text-gray-600">Yearly</p>
+            <p class="text-xl font-bold text-purple-700">{{ $yearlyCoupons }}</p>
+        </div>
+    </div>
+</div>
+<div class="p-6 bg-white shadow rounded mt-6">
+    <h3 class="text-lg font-semibold mb-4 text-center">Coupon Status Chart</h3>
+    <div class="flex justify-center items-center" style="height: 300px;">
+        <canvas id="couponChart" style="max-width: 300px;"></canvas>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
+<script type="text/javascript">
 let salesChart = null;
 
 function loadChart(range = 'monthly') {
@@ -136,10 +211,36 @@ function loadChart(range = 'monthly') {
 
 document.getElementById('rangeSelect').addEventListener('change', e => loadChart(e.target.value));
 loadChart();
-</script>
 
-        </div>
-    </div>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ctx = document.getElementById('couponChart').getContext('2d');
+
+    const couponData = [
+        {{ $activeCoupons ?? 0 }},
+        {{ $inactiveCoupons ?? 0 }},
+        {{ $expiredCoupons ?? 0 }}
+    ];
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Active', 'Inactive', 'Expired'],
+            datasets: [{
+                data: couponData,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { 
+                legend: { position: 'bottom' } 
+            }
+        }
+    });
+
+});
+</script>
 </x-app-layout>
 
 

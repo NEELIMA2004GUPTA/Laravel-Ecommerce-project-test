@@ -6,22 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Coupon;
 
 class AdminController extends Controller
 {
     public function index()
     {
         $totalUsers = User::count();
+        $activeUsers = User::where('is_blocked', 0)->count(); 
+        $blockedUsers = User::where('is_blocked', 1)->count();
         $totalOrders = Order::count();
-        $totalSales = Order::where('status', 'Delivered')
-            ->get()
-            ->sum(function($order){
-            $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
-            $tax = ($subTotal * 5) / 100;
-        return $subTotal + $tax;
-    });
+        $pendingOrders = Order::where('status', 'pending')->count();
+        $confirmedOrders = Order::where('status', 'confirmed')->count();
+        $shippedOrders = Order::where('status', 'shipped')->count();
+        $deliveredOrders = Order::where('status', 'delivered')->count();
+        $cancelledOrders = Order::where('status', 'cancelled')->count();
+    
 
         // Most sold products
         $topProducts = OrderItem::with('product')
@@ -34,7 +35,17 @@ class AdminController extends Controller
         // Recent 5 orders
         $recentOrders = Order::with('user')->latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('totalUsers', 'totalOrders', 'totalSales', 'topProducts', 'recentOrders'));
+        $dailyCoupons = Coupon::whereDate('created_at', today())->count();
+        $weeklyCoupons = Coupon::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        $monthlyCoupons = Coupon::whereMonth('created_at', now()->month)->count();
+        $yearlyCoupons = Coupon::whereYear('created_at', now()->year)->count();
+
+        $activeCoupons = Coupon::where('status', 1)->whereDate('expires_at', '>=', today())->count();
+        $inactiveCoupons = Coupon::where('status', 0)->count();
+        $expiredCoupons = Coupon::whereDate('expires_at', '<', today())->count();
+
+        return view('admin.dashboard', compact('totalUsers','activeUsers','blockedUsers', 'totalOrders','pendingOrders','confirmedOrders','shippedOrders','deliveredOrders','cancelledOrders', 'topProducts', 'recentOrders','dailyCoupons','weeklyCoupons','monthlyCoupons','yearlyCoupons',
+        'activeCoupons','inactiveCoupons','expiredCoupons'));
     }
 
 
@@ -83,4 +94,5 @@ class AdminController extends Controller
 
         return response()->json($data);
     }
+
 }

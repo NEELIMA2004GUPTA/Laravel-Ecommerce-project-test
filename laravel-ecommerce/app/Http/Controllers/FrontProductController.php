@@ -64,7 +64,4 @@ class FrontProductController extends Controller
         $product = Product::where('slug', $slug)->firstOrFail();
         return view('frontend.products.show', compact('product'));
     }
-
-
-
 }

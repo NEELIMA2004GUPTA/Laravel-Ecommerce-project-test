@@ -56,15 +56,21 @@
             $imgs = is_array($product->images) ? $product->images : json_decode($product->images, true);
         @endphp
 
-        @foreach($imgs ?? [] as $img)
-        <div class="relative inline-block">
-            <img src="{{ asset('storage/' . $img) }}" class="w-24 h-24 object-cover rounded border shadow">
-            <button type="button"
-                class="remove-image-btn absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-sm"
-                data-image="{{ $img }}">x</button>
+        @foreach($imgs as $image)
+            <div style="position: relative; display:inline-block; margin:10px;">
+                <img src="{{ asset('storage/' . $image) }}" width="100" height="100" style="object-fit:cover; border-radius:6px;">
+                <!-- Hidden checkbox to submit delete request -->
+                 <input type="checkbox" name="remove_images[]" value="{{ $image }}" class="remove-image-checkbox" style="display:none;">
+                <!-- Delete Button -->
+                <button type="button"
+                    onclick="this.previousElementSibling.checked = true; this.parentElement.style.display='none';"
+                    style="position:absolute; top:4px; right:4px; background:#ff0000; color:#fff; border:none; border-radius:50%; width:18px; height:18px; padding:0; font-size:12px; line-height:18px; text-align:center; cursor:pointer;">x
+                </button>
+
+
+                </div>
+            @endforeach
         </div>
-        @endforeach
-    </div>
 
         <label class="font-semibold">Add More Images</label>
         <input type="file" name="images[]" multiple class="w-full border p-2 mb-4 form-control">

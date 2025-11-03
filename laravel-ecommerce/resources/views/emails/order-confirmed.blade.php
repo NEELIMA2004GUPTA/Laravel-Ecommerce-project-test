@@ -33,7 +33,7 @@
 
         <p class="text-gray-500 text-sm mt-8 text-center">
             Thanks,<br>
-            Your Store
+            Shoppix
         </p>
     </div>
 </body>

@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ url('/') }}">
-                        <h1 class="text-xl font-bold text-gray-800">Your Store</h1>
+                        <h1 class="text-xl font-bold text-gray-800">Shoppix</h1>
                     </a>
                 </div>
 
@@ -124,6 +124,17 @@
                     </x-dropdown>
                 @endauth
             </div>
+            @guest
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('login') }}" class="text-gray-700 hover:text-blue-600 font-medium">
+                        Login
+                    </a>
+
+                    <a href="{{ route('register') }}" class="text-white bg-blue-600 px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+                        Register
+                    </a>
+                </div>
+            @endguest
         </div>
     </div>
 </nav>
