@@ -1,0 +1,112 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use Tests\TestCase;
+use App\Models\User;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class AdminProductControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function adminLogin()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+        return $admin;
+    }
+
+    /** @test */
+    public function admin_can_view_products_list()
+    {
+        $this->adminLogin();
+        Product::factory()->count(3)->create();
+
+        $response = $this->get(route('admin.products.index'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('products');
+    }
+
+    /** @test */
+    public function admin_can_create_a_product()
+    {
+        $this->adminLogin();
+        Storage::fake('public');
+
+        $category = Category::factory()->create();
+
+        $response = $this->post(route('admin.products.store'), [
+            'title' => 'Test Product',
+            'category_id' => $category->id,
+            'price' => 999,
+            'discount' => 50,
+            'sku' => 'TEST1234',
+            'stock' => 10,
+            'images' => [
+                UploadedFile::fake()->image('p1.jpg'),
+                UploadedFile::fake()->image('p2.jpg')
+            ]
+        ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseHas('products', ['title' => 'Test Product']);
+    }
+
+    /** @test */
+    public function admin_can_update_a_product()
+    {
+        $this->adminLogin();
+        $product = Product::factory()->create();
+        $category = Category::factory()->create();
+
+        $response = $this->put(route('admin.products.update', $product->id), [
+            'title' => 'Updated Product',
+            'category_id' => $category->id,
+            'price' => 500,
+            'discount' => 20,
+            'sku' => $product->sku,
+            'stock' => 15,
+        ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseHas('products', ['title' => 'Updated Product']);
+    }
+
+    /** @test */
+    public function admin_can_delete_a_product()
+    {
+        $this->adminLogin();
+        $product = Product::factory()->create();
+
+        $response = $this->delete(route('admin.products.destroy', $product));
+
+        $response->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+    }
+
+    /** @test */
+    public function admin_can_delete_a_single_product_image()
+    {
+        $this->adminLogin();
+        Storage::fake('public');
+
+        $product = Product::factory()->create([
+            'images' => json_encode(['products/test.jpg'])
+        ]);
+
+        Storage::disk('public')->put('products/test.jpg', 'dummy');
+
+        $response = $this->delete(route('admin.products.deleteImage', $product), [
+            'image' => 'products/test.jpg'
+        ]);
+
+        $response->assertJson(['success' => true]);
+        Storage::disk('public')->assertMissing('products/test.jpg');
+    }
+}

@@ -36,7 +36,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
 
     // Categories
     Route::resource('categories', CategoryController::class);
-    Route::get('categories/{parent}/subcategories', [CategoryController::class, 'getSubcategories']);
+    Route::get('categories/{parent}/subcategories', [CategoryController::class, 'getSubcategories'])->name('categories.subcategories');
 
     // Products
     Route::resource('products', ProductController::class);

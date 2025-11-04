@@ -81,7 +81,7 @@ class ProductReviewController extends BaseController
 
         return response()->json([
             'success' => true,
-            'message' => 'Video uploaded and saved temporarily ✅'
+            'message' => 'Video uploaded and saved temporarily '
         ]);
     }
 }
