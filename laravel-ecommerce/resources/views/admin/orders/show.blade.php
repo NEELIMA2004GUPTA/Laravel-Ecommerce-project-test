@@ -66,7 +66,7 @@
             return $item->quantity * $item->price;
         });
 
-        $tax = ($subTotal * 5) / 100; // 18% GST
+        $tax = ($subTotal * 5) / 100; 
 
         $grandTotal = $subTotal + $tax;
     @endphp
