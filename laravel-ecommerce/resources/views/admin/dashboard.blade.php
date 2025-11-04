@@ -120,7 +120,16 @@
                             <tr>
                                 <td class="p-2 border">#{{ $order->id }}</td>
                                 <td class="p-2 border">{{ $order->user->name }}</td>
-                                <td class="p-2 border">₹{{ $order->total }}</td>
+                                 @php
+                                    $subTotal = $order->items->sum(function($item){
+                                        return $item->quantity * $item->price;
+                                    });
+
+                                    $tax = ($subTotal * 5) / 100; 
+
+                                    $grandTotal = $subTotal + $tax;
+                                @endphp
+                                <td class="p-2 border">₹{{ number_format($grandTotal, 2) }}</td>
                                 <td class="p-2 border">{{ $order->status }}</td>
                             </tr>
                         @endforeach
@@ -252,8 +261,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-
-
 </x-app-layout>
 
 
