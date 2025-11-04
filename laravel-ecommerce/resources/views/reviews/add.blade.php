@@ -154,11 +154,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const data = await res.json();
         if (data.success) {
-            recStatus.textContent = '✅ Video uploaded successfully (You can now submit review)';
+            recStatus.textContent = 'Video uploaded successfully (You can now submit review)';
             uploadBtn.disabled = true; // optional: prevent double upload
         } 
         else {
-            recStatus.textContent = '❌ Upload failed';
+            recStatus.textContent = 'Upload failed';
         }
 });
 });
