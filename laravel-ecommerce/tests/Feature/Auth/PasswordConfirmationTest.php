@@ -31,14 +31,20 @@ class PasswordConfirmationTest extends TestCase
         $response->assertSessionHasNoErrors();
     }
 
-    public function test_password_is_not_confirmed_with_invalid_password(): void
+    public function password_is_not_confirmed_with_invalid_password()
     {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->post('/confirm-password', [
-            'password' => 'wrong-password',
+        $user = \App\Models\User::factory()->create([
+            'password' => bcrypt('password123'),
         ]);
 
-        $response->assertSessionHasErrors();
+        $response = $this
+            ->actingAs($user)
+            ->post('/confirm-password', [
+                'password' => 'wrong-password',
+            ]);
+
+        $response->assertInvalid(['password']);
     }
+
+    
 }

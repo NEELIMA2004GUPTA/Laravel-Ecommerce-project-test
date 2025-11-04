@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,8 +18,13 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+
+    public function boot()
     {
-        //
+        // Force all URLs to use APP_URL
+        URL::forceRootUrl(config('app.url'));
+
+        // If your ngrok URL uses HTTPS (it does)
+        URL::forceScheme('https');
     }
 }

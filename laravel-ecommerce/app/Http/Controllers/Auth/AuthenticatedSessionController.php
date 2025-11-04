@@ -32,9 +32,9 @@ class AuthenticatedSessionController extends Controller
         ]);
 
         if(!Auth::attempt($request->only('email','password'),$request->filled('remember'))){
-            throw ValidationException::withMessages([
-                'email'=>__('auth.failed'),
-            ]);
+            return back()->withErrors([
+                'email' => 'Invalid Credentials.',
+        ]);
         }
 
         $request->session()->regenerate();

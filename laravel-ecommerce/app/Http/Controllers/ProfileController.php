@@ -28,14 +28,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
-        ]);
+        if ($request->email !== $user->email) {
+            $user->email_verified_at = null; 
+        }
 
-        $user->update($data);
+        $user->fill($request->validated());
+        $user->save();
 
-        return back()->with('status', 'Profile updated.');
+        return redirect('/profile')->with('status', 'profile-updated');
     }
 
     public function password(Request $request)

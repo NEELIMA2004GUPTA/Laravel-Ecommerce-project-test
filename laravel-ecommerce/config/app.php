@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://omar-heady-paulina.ngrok-free.dev'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,8 +122,6 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
-    Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
 
     
 
