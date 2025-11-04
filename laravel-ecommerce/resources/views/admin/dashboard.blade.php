@@ -221,10 +221,10 @@ document.addEventListener("DOMContentLoaded", function () {
         rangeSelect.addEventListener('change', e => loadChart(e.target.value));
     }
 
-    // ✅ Default Load
-    loadChart('daily');
+    // Default Load
+    loadChart();
 
-    // ✅ Coupon Chart (Bring inside DOMContentLoaded)
+    // Coupon Chart
     const couponCtx = document.getElementById('couponChart').getContext('2d');
 
     const couponData = JSON.parse(`@json([
