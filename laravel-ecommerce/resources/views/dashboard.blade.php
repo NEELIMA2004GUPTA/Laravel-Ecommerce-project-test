@@ -12,7 +12,7 @@
             <div class="bg-white p-6 rounded shadow">
                 <h2 class="text-2xl font-semibold mb-4">Hello, {{ auth()->user()->name }} 👋</h2>
 
-                <div class="grid grid-cols-5 gap-4 text-center">
+                <div class="grid grid-cols-6 gap-4 text-center">
 
                     <div class="p-4 bg-blue-100 rounded">
                         <h3 class="text-lg font-medium">Total Orders</h3>
@@ -22,6 +22,11 @@
                     <div class="p-4 bg-yellow-100 rounded">
                         <h3 class="text-lg font-medium">Pending</h3>
                         <p class="text-2xl font-bold">{{ $pending }}</p>
+                    </div>
+
+                    <div class="p-4 bg-yellow-100 rounded">
+                        <h3 class="text-lg font-medium">Approved</h3>
+                        <p class="text-2xl font-bold">{{ $confirmed }}</p>
                     </div>
 
                     <div class="p-4 bg-green-100 rounded">

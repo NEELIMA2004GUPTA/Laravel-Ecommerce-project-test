@@ -26,7 +26,8 @@ class ProductReviewController extends BaseController
         $validator=Validator::make($request->all(),[
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
-            'images.*' => 'nullable|image|max:5120',   
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'nullable|image|max:1024|mimes:jpg,jpeg,png',   
             'video' => 'nullable|mimetypes:video/webm,video/mp4,video/ogg|max:51200' 
         ]);
 

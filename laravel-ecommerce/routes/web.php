@@ -114,7 +114,7 @@ Route::get('/search', [FrontProductController::class, 'search'])->name('products
 // Cart Routes
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::post('/cart/update/{product}', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
 Route::get('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
 Route::get('/clear-cart', function () {
     session()->forget('cart');

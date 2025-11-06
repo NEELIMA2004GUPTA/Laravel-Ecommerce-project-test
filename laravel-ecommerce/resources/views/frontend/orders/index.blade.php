@@ -50,7 +50,7 @@
                                 @endif
                             </span>
 
-                            @if(in_array($order->status, ['Pending','Shipped']))
+                            @if(in_array($order->status, ['Pending','Confirmed']))
                                 <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
                                     @csrf
                                     <button class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">
@@ -65,8 +65,8 @@
                     <!-- Order Details -->
                     <div class="text-sm text-gray-600 mt-3">
                         <p><strong>Name:</strong> {{ $order->name }}</p>
-                        <p><strong>Phone:</strong> {{ $order->phone }}</p>
-                        <p><strong>Address:</strong> {{ $order->address }}</p>
+                        <p><strong>Phone:</strong> {{ $order->country_code ?? '' }} {{ $order->phone }}</p>
+                        <p><strong>Address:</strong> {{ $order->address }}, {{ $order->pincode }}</p>
                         <p><strong>Payment Method:</strong> {{ ucfirst($order->payment_method) }}</p>
                     </div>
 
@@ -112,11 +112,33 @@
                         Tax (5%): ₹{{ number_format($tax, 2) }} <br>
                         Grand Total: ₹{{ number_format($grandTotal, 2) }}
                     </div>
+                    <div class="mt-4 text-left text-xl font-bold text-gray-800">
+                        @if($order->status == 'Delivered')
+                            <button data-toggle="collapse" data-target="#reviewBox-{{ $item->id }}"
+                                class="px-3 py-1 bg-indigo-600 text-white rounded">
+                                    Add Review
+                            </button>
+                        @endif
+                    </div>
 
+                    {{-- COLLAPSE SECTION --}}
+                    <div id="reviewBox-{{ $item->id }}" class="hidden mt-3 border p-4 rounded bg-white">
+                        @include('reviews._form', ['product' => $item->product])
+                    </div>
                 </div>
                 @endforeach
             </div>
 
         @endif
     </div>
+
+<script>
+document.querySelectorAll('[data-toggle="collapse"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = document.querySelector(btn.dataset.target);
+        target.classList.toggle('hidden');
+    });
+});
+</script>
+
 </x-app-layout>

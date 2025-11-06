@@ -15,10 +15,11 @@ class MyDashboardController extends Controller
         $totalOrders = $user->orders()->count();
         $delivered = $user->orders()->where('status', 'Delivered')->count();
         $pending = $user->orders()->where('status', 'Pending')->count();
+        $confirmed = $user->orders()->where('status', 'Confirmed')->count();
         $shipped = $user->orders()->where('status', 'Shipped')->count();
         $cancelled = $user->orders()->where('status', 'Cancelled')->count();
         
 
-        return view('dashboard', compact('totalOrders', 'delivered', 'pending','shipped', 'cancelled'));
+        return view('dashboard', compact('totalOrders', 'delivered', 'pending','shipped', 'cancelled','confirmed'));
     }
 }

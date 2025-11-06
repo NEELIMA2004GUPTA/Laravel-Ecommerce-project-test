@@ -44,11 +44,11 @@
             @endphp
 
             <div class="mt-4">
-                @if($product->discount)
+                @if($product->discount > 0)
                     <p class="line-through text-gray-400">₹{{ number_format($product->price, 2) }}</p>
                     <p class="text-3xl font-semibold text-green-600">
                         ₹{{ number_format($discounted, 2) }}
-                        <span class="text-sm text-red-500">({{ $product->discount }}% OFF)</span>
+                    <span class="text-sm text-red-500">({{ $product->discount }}% OFF)</span>
                     </p>
                 @else
                     <p class="text-3xl font-semibold text-gray-800">₹{{ number_format($product->price, 2) }}</p>
