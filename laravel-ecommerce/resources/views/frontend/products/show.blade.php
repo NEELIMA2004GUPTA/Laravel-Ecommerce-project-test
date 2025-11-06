@@ -78,12 +78,36 @@
                 <p class="mt-3 text-sm">Please <a class="text-blue-600" href="{{ route('login') }}">login</a> to add a review.</p>
             @endauth
 
+            @php
+                $cart = session()->get('cart', []);
+                $currentQty = isset($cart[$product->id]) ? $cart[$product->id]['quantity'] : 1;
+            @endphp
             {{-- Add to Cart --}}
             <div class="mt-6">
                 @if($product->stock > 0)
-                    <form action="{{ route('cart.add', $product) }}" method="POST">@csrf
-                        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Add to Cart</button>
-                    </form>
+                    <form action="{{ route('cart.add', $product->id) }}" method="POST">
+                    @csrf
+                    <div class="flex items-center space-x-2">
+                        <label for="quantity" class="font-medium">Quantity:</label>
+                        <input 
+                            type="number" 
+                            id="quantity" 
+                            name="quantity" 
+                            value="{{ $currentQty }}" 
+                            min="1" 
+                            max="{{ $product->stock }}" 
+                            class="w-16 border rounded p-1 text-center">
+                    </div>
+                    @if($product->stock == 0)
+                        <p class="text-red-500 text-sm mt-1">Out of stock</p>
+                    @elseif(old('quantity') > $product->stock)
+                        <p class="text-red-500 text-sm mt-1">Maximum stock reached.</p>
+                    @endif
+
+                    <button type="submit" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Add to Cart
+                    </button>
+                </form>
                 @else
                     <span class="px-4 py-2 bg-red-600 text-white rounded">Out of Stock</span>
                 @endif

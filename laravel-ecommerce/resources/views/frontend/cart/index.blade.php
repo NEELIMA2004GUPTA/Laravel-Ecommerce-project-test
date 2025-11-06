@@ -23,7 +23,7 @@
             <th class="p-3">Product</th>
             <th class="p-3">Qty</th>
             <th class="p-3">Price</th>
-            <th class="p-3">Remove</th>
+            <th class="p-3">Total Price</th>
         </tr>
     </thead>
 
@@ -35,9 +35,9 @@
             @php 
                 $originalPrice = $item['original_price'] ?? $item['price']; 
                 $discount = $item['discount'] ?? 0;
-                $lineTotal = $item['price'] * $item['qty']; 
+                $lineTotal = $item['price'] * $item['quantity']; 
                 $total += $lineTotal;
-                $items += $item['qty'];
+                $items += $item['quantity'];
             @endphp
 
             <tr class="border-b hover:bg-gray-50">
@@ -47,19 +47,20 @@
                     <form method="POST" action="{{ route('cart.update', $id) }}" class="flex items-center gap-2">
                         @csrf
                         <input type="number" 
-                               name="qty" 
-                               value="{{ $item['qty'] }}" 
-                               min="1" 
-                               max="{{ $item['stock'] }}" 
-                               class="w-16 border rounded p-1 text-center" />
+                            name="qty" 
+                            value="{{ $item['quantity'] }}" 
+                            min="1" 
+                            max="{{ $item['stock'] }}" 
+                            class="w-16 border rounded p-1 text-center qty-input" 
+                            data-id="{{ $id }}" />
 
-                        @if($item['qty'] >= $item['stock'])
+                        @if($item['quantity'] >= $item['stock'])
                             <p class="text-xs text-red-500 font-medium">
                                 Maximum stock reached.
                             </p>
                         @endif
 
-                        <button class="text-blue-600 hover:underline">Update</button>
+                        <a href="{{ route('cart.remove', $id) }}" class="text-red-600 font-bold hover:underline">x</a>
                     </form>
                 </td>
 
@@ -73,7 +74,7 @@
                 </td>
 
                 <td class="p-3">
-                    <a href="{{ route('cart.remove', $id) }}" class="text-red-600 font-bold hover:underline">x</a>
+                    <span class="text-lg text-blue-600">₹{{ number_format($lineTotal, 2) }}</span>
                 </td>
             </tr>
         @endforeach
@@ -152,7 +153,17 @@
 @endif
 
 </div>
+<script>
+document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('change', function() {
+        let form = this.closest('form');
+        // Automatically submit the form when quantity changes
+        form.submit();
+    });
+});
+</script>
 
 </x-app-layout>
+
 
 

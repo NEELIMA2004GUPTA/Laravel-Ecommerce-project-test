@@ -13,37 +13,52 @@ class CartController extends Controller
         return view('frontend.cart.index',compact('cart'));
     }
 
-    public function add(Product $product){
-        $cart=session()->get('cart',[]);
+    public function add(Request $request, Product $product)
+{
+    $cart = session()->get('cart', []);
+
+    // Get quantity from request or default to 1
+    $qtyToAdd = (int) $request->quantity ?? 1;
+
+    if (isset($cart[$product->id])) {
+        // Increase quantity if product already in cart
+        $newQty = $cart[$product->id]['quantity'] + $qtyToAdd;
+
+        // Stock check
+        if ($newQty > $product->stock) {
+            $newQty = $product->stock;
+        }
+
+        $cart[$product->id]['quantity'] = $newQty;
+    } else {
+        // Stock check for first addition
+        if ($qtyToAdd > $product->stock) {
+            $qtyToAdd = $product->stock;
+        }
 
         $discountedPrice = $product->discount > 0
-        ? $product->price - ($product->price * $product->discount / 100)
-        : $product->price;
+            ? $product->price - ($product->price * $product->discount / 100)
+            : $product->price;
 
-        if(isset($cart[$product->id])) {
-            $cart[$product->id]['qty']++;
-        } 
-        
-        else {
-            $cart[$product->id] = [
-                'title' => $product->title,
-                'original_price' => $product->price,
-                'price'=> $discountedPrice,
-                'discount'=> $product->discount,
-                'qty'=> 1,
-                'stock' => $product->stock,
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        if(Auth::check()) {
-            return redirect()->back()->with('success', 'Product added to your cart.');
-        } 
-        else {
-            return redirect()->back()->with('success', 'Product added to cart. Please login to see your cart.');
-        }
+        $cart[$product->id] = [
+            'title' => $product->title,
+            'original_price' => $product->price,
+            'price' => $discountedPrice,
+            'discount' => $product->discount,
+            'quantity' => $qtyToAdd,
+            'stock' => $product->stock,
+        ];
     }
+
+    session()->put('cart', $cart);
+
+    if (Auth::check()) {
+        return redirect()->back()->with('success', 'Product added to your cart.');
+    } else {
+        return redirect()->back()->with('success', 'Product added to cart. Please login to see your cart.');
+    }
+}
+
 
     public function update(Request $request, $id)
     {
