@@ -31,7 +31,7 @@
 <div class="space-y-2">
     <label class="block text-gray-600 text-sm font-medium">Phone</label>
     <div class="flex gap-2">
-        <select name="country_code" class="border rounded-lg px-3 py-2">
+        <select name="country_code" class="border rounded-lg px-3 py-2 w-64">
             <option value="+91" selected>+91 🇮🇳</option>
             <option value="+1">+1 🇺🇸</option>
             <option value="+44">+44 🇬🇧</option>
