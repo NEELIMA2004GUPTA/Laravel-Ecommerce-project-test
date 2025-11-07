@@ -20,7 +20,6 @@
                 <p class="text-gray-600 text-xl">You haven't placed any orders yet.</p>
             </div>
         @else
-
             <div class="space-y-8">
                 @foreach($orders as $order)
                 <div class="bg-white border rounded-lg shadow hover:shadow-lg transition p-6">
@@ -33,7 +32,6 @@
                         </p>
 
                         <div class="flex items-center gap-3">
-
                             <!-- Status Badge -->
                             <span class="px-3 py-1 text-sm font-medium rounded-full
                                 @if($order->status == 'Pending') bg-yellow-100 text-yellow-700
@@ -58,7 +56,6 @@
                                     </button>
                                 </form>
                             @endif
-
                         </div>
                     </div>
 
@@ -92,17 +89,31 @@
                                     <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
                                     <p class="font-semibold text-gray-800">₹{{ $item->price }}</p>
                                 </div>
+
+                                @if($order->status == 'Delivered')
+                                <!-- Review Button -->
+                                <div class="ml-auto">
+                                    <button data-toggle="collapse" data-target="#reviewBox-{{ $item->id }}"
+                                        class="px-3 py-1 bg-indigo-600 text-white rounded">
+                                        Add Review
+                                    </button>
+                                </div>
+                                @endif
                             </div>
+
+                            @if($order->status == 'Delivered')
+                            <!-- Review Form Collapse -->
+                            <div id="reviewBox-{{ $item->id }}" class="mt-3 border p-4 rounded bg-white hidden">
+                                @include('reviews._form', ['product' => $item->product])
+                            </div>
+                            @endif
                             @endforeach
                         </div>
                     </div>
+
                     @php
-                        $subTotal = $order->items->sum(function($item){
-                            return $item->quantity * $item->price;
-                        });
-
-                        $tax = ($subTotal * 5) / 100; 
-
+                        $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
+                        $tax = ($subTotal * 5) / 100;
                         $grandTotal = $subTotal + $tax;
                     @endphp
 
@@ -112,23 +123,10 @@
                         Tax (5%): ₹{{ number_format($tax, 2) }} <br>
                         Grand Total: ₹{{ number_format($grandTotal, 2) }}
                     </div>
-                    <div class="mt-4 text-left text-xl font-bold text-gray-800">
-                        @if($order->status == 'Delivered')
-                            <button data-toggle="collapse" data-target="#reviewBox-{{ $item->id }}"
-                                class="px-3 py-1 bg-indigo-600 text-white rounded">
-                                    Add Review
-                            </button>
-                        @endif
-                    </div>
 
-                    {{-- COLLAPSE SECTION --}}
-                    <div id="reviewBox-{{ $item->id }}" class="hidden mt-3 border p-4 rounded bg-white">
-                        @include('reviews._form', ['product' => $item->product])
-                    </div>
                 </div>
                 @endforeach
             </div>
-
         @endif
     </div>
 
@@ -137,8 +135,90 @@ document.querySelectorAll('[data-toggle="collapse"]').forEach(btn => {
     btn.addEventListener('click', () => {
         const target = document.querySelector(btn.dataset.target);
         target.classList.toggle('hidden');
+
+        if (!target.classList.contains('hidden')) {
+            const form = target.querySelector('form');
+            if (!form.dataset.listenersAttached) {
+                attachReviewValidation(form);
+                form.dataset.listenersAttached = "true";
+            }
+        }
     });
 });
+
+function attachReviewValidation(form) {
+    const stars = form.querySelectorAll('.star-btn');
+    const ratingInput = form.querySelector('input[name="rating"]');
+    const ratingError = document.createElement('p');
+    ratingError.className = 'text-red-600 mt-1';
+    form.appendChild(ratingError);
+
+    const commentInput = form.querySelector('textarea[name="comment"]');
+    const commentError = document.createElement('p');
+    commentError.className = 'text-red-600 mt-1';
+    form.appendChild(commentError);
+
+    const imageInput = form.querySelector('input[name="images[]"]');
+    const mediaError = document.createElement('p');
+    mediaError.className = 'text-red-600 mt-1';
+    form.appendChild(mediaError);
+
+    stars.forEach(btn => {
+        btn.addEventListener('click', () => {
+            ratingInput.value = btn.dataset.value;
+            stars.forEach(s => {
+                const svg = s.querySelector('svg');
+                svg.classList.remove('text-yellow-400');
+                svg.classList.add('text-gray-300');
+                if (parseInt(s.dataset.value) <= parseInt(btn.dataset.value)) {
+                    svg.classList.add('text-yellow-400');
+                    svg.classList.remove('text-gray-300');
+                }
+            });
+            ratingError.textContent = '';
+        });
+    });
+
+    commentInput.addEventListener('input', () => {
+        const val = commentInput.value.trim();
+        if (!val) commentError.textContent = 'Comment is required.';
+        else if (val.length > 1000) commentError.textContent = 'Comment cannot exceed 1000 characters.';
+        else commentError.textContent = '';
+    });
+
+    imageInput.addEventListener('change', () => {
+        const files = imageInput.files;
+        mediaError.textContent = '';
+        if (files.length > 5) { mediaError.textContent = 'Max 5 files allowed.'; return; }
+        for (const file of files) {
+            if (file.type.startsWith('image/') && file.size > 1*1024*1024) {
+                mediaError.textContent = `Image ${file.name} exceeds 1MB.`; return;
+            }
+            if (file.type.startsWith('video/') && file.size > 25*1024*1024) {
+                mediaError.textContent = `Video ${file.name} exceeds 25MB.`; return;
+            }
+        }
+    });
+
+    form.addEventListener('submit', e => {
+        let hasError = false;
+        if (!ratingInput.value) { ratingError.textContent = 'Please select a rating.'; hasError = true; }
+        const commentVal = commentInput.value.trim();
+        if (!commentVal) { commentError.textContent = 'Comment is required.'; hasError = true; }
+        else if (commentVal.length > 1000) { commentError.textContent = 'Comment cannot exceed 1000 characters.'; hasError = true; }
+
+        if (imageInput.files.length > 0) {
+            const files = imageInput.files;
+            if (files.length > 5) { mediaError.textContent = 'Max 5 files allowed.'; hasError = true; }
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/') && file.size > 1*1024*1024) { mediaError.textContent = `Image ${file.name} exceeds 1MB.`; hasError = true; }
+                if (file.type.startsWith('video/') && file.size > 25*1024*1024) { mediaError.textContent = `Video ${file.name} exceeds 25MB.`; hasError = true; }
+            });
+        }
+
+        if (hasError) e.preventDefault();
+    });
+}
 </script>
 
 </x-app-layout>

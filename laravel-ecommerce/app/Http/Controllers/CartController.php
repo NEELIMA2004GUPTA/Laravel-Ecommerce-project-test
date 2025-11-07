@@ -58,23 +58,49 @@ class CartController extends Controller
         return redirect()->back()->with('success', 'Product added to cart. Please login to see your cart.');
     }
 }
-
-
     public function update(Request $request, $id)
-    {
-        $cart = session()->get('cart', []);
+{
+    $cart = session()->get('cart', []);
 
-        if(isset($cart[$id])) {
-            $maxStock = $cart[$id]['stock'];
+    if(isset($cart[$id])) {
 
-            $qty = min($request->qty, $maxStock); 
-            $cart[$id]['qty'] = $qty;
+        $maxStock = $cart[$id]['stock'];
 
-            session()->put('cart', $cart);
+        $qty = max(1, min($request->qty, $maxStock));
+        $cart[$id]['qty'] = $qty;
+        $cart[$id]['subtotal'] = $cart[$id]['price'] * $qty;
+
+        session()->put('cart', $cart);
+
+        // ✅ Recalculate total
+       $total = 0;
+$items = 0;
+
+foreach($cart as $item){
+    $total += $item['price'] * $item['qty'];
+    $items += $item['qty'];
+}
+
+// Apply coupon if any
+$discountAmount = session('coupon.discount') ?? 0;
+$subTotal = $total - $discountAmount;
+$tax = $subTotal * 0.05; // 5% GST
+$grandTotal = $subTotal + $tax;
+
+return response()->json([
+    'success' => true,
+    'qty' => $qty,
+    'subtotal' => number_format($cart[$id]['price'] * $qty, 2),
+    'total' => number_format($subTotal, 2),
+    'tax' => number_format($tax, 2),
+    'grandTotal' => number_format($grandTotal, 2),
+    'totalItems' => $items
+]);
+
     }
 
-    return back()->with('success', 'Cart updated!');
-    }
+    return response()->json(['success' => false]);
+}
 
     public function remove(Product $product)
     {

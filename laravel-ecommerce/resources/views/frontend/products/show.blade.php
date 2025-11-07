@@ -157,7 +157,7 @@
 
             @php
                 $cart = session()->get('cart', []);
-                $currentQty = isset($cart[$product->id]) ? $cart[$product->id]['quantity'] : 1;
+                $currentQty = isset($cart[$product->id]) ? $cart[$product->id]['quantity'] : 0;
             @endphp
             {{-- Add to Cart --}}
             <div class="mt-6">
@@ -165,13 +165,13 @@
                     <form action="{{ route('cart.add', $product->id) }}" method="POST">
                     @csrf
                     <div class="flex items-center space-x-2">
-                        <label for="quantity" class="font-medium">Quantity:</label>
+                        <label for="quantity" class="font-medium">Quantity Added in Cart :</label>
                         <input 
                             type="number" 
                             id="quantity" 
                             name="quantity" 
                             value="{{ $currentQty }}" 
-                            min="1" 
+                            min="0" 
                             max="{{ $product->stock }}" 
                             class="w-16 border rounded p-1 text-center">
                     </div>

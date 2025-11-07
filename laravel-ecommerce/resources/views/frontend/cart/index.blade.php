@@ -46,14 +46,12 @@
                 <td class="p-3">
                     <form method="POST" action="{{ route('cart.update', $id) }}" class="flex items-center gap-2">
                         @csrf
-                        <input type="number" 
-                            name="qty" 
-                            value="{{ $item['quantity'] }}" 
-                            min="1" 
-                            max="{{ $item['stock'] }}" 
-                            class="w-16 border rounded p-1 text-center qty-input" 
-                            data-id="{{ $id }}" />
-
+                       <input type="number" class="qty-input border p-1 w-16"
+                            data-id="{{ $id }}"
+                            value="{{ $item['quantity'] }}"
+                            min="1"
+                            max="{{ $item['stock'] }}">
+                            
                         @if($item['quantity'] >= $item['stock'])
                             <p class="text-xs text-red-500 font-medium">
                                 Maximum stock reached.
@@ -73,8 +71,8 @@
                     @endif
                 </td>
 
-                <td class="p-3">
-                    <span class="text-lg text-blue-600">₹{{ number_format($lineTotal, 2) }}</span>
+                <td class="item-subtotal" data-id="{{ $id }}">
+                    ₹{{ number_format($lineTotal, 2) }}
                 </td>
             </tr>
         @endforeach
@@ -118,7 +116,9 @@
 
 {{-- ORDER SUMMARY --}}
 <div class="mt-6 border-t pt-4 text-right">
-    <p class="text-lg font-medium">Total Items: <span class="font-bold">{{ $items }}</span></p>
+    <p class="text-lg font-medium">
+        Total Items: <span id="cart-items" class="font-bold">{{ $items }}</span>
+    </p>
 
     @if(session()->has('coupon'))
         <div class="flex justify-between text-green-600 font-semibold my-2">
@@ -129,16 +129,18 @@
 
     <div class="flex justify-between text-gray-700 my-2">
         <span>Subtotal:</span>
-        <span>₹{{ number_format($subTotal, 2) }}</span>
+        <span id="cart-total">
+            ₹{{ number_format($subTotal, 2) }}
+        </span>
     </div>
 
     <div class="flex justify-between text-gray-700 my-2">
         <span>Tax (5% GST):</span>
-        <span>₹{{ number_format($tax, 2) }}</span>
+        <span id="cart-tax">₹{{ number_format($tax, 2) }}</span>
     </div>
 
     <p class="text-2xl font-bold text-green-600 mt-1">
-        Amount Payable: ₹{{ number_format($grandTotal, 2) }}
+        Amount Payable: <span id="cart-grand-total">₹{{ number_format($grandTotal, 2) }}</span>
     </p>
 
     <a href="{{ auth()->check() ? route('checkout') : route('login') }}"
@@ -156,9 +158,31 @@
 <script>
 document.querySelectorAll('.qty-input').forEach(input => {
     input.addEventListener('change', function() {
-        let form = this.closest('form');
-        // Automatically submit the form when quantity changes
-        form.submit();
+        let id = this.dataset.id;
+        let qty = this.value;
+
+        fetch(`/cart/update/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ qty: qty })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+
+                // Update line subtotal
+                document.querySelector(`.item-subtotal[data-id="${id}"]`).innerText = `₹${data.subtotal}`;
+
+                // Update cart totals
+                document.getElementById('cart-total').innerText = `₹${data.total}`;
+                document.getElementById('cart-tax').innerText = `₹${data.tax}`;
+                document.getElementById('cart-grand-total').innerText = `₹${data.grandTotal}`;
+                document.getElementById('cart-items').innerText = data.totalItems;
+            }
+        });
     });
 });
 </script>
