@@ -83,7 +83,7 @@
 @endphp
 
 {{-- COUPON FORM --}}
-{{-- COUPON FORM --}}
+
 @if(!session()->has('coupon'))
 <form action="{{ route('apply.coupon') }}" method="POST" class="my-6 flex items-center gap-3">
     @csrf
