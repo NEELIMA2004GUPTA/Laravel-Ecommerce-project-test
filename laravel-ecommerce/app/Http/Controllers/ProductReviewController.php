@@ -131,6 +131,22 @@ class ProductReviewController extends BaseController
             'message' => 'Video uploaded and saved temporarily '
         ]);
     }
+
+    public function destroy($id)
+    {
+        $review = Review::findOrFail($id);
+        $product = $review->product; 
+
+        // Check if the current user is the owner of the review
+        if ($review->user_id !== auth()->id()) {
+            return redirect()->route('product.show',  $product->slug)->with('error', 'You are not authorized to delete this review.');
+        }
+
+        // Delete the review
+        $review->delete();
+
+        return redirect()->route('product.show',  $product->slug)->with('success', 'Review deleted successfully.');
+    }
 }
 
 

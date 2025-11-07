@@ -102,6 +102,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/{product}/review/store', [ProductReviewController::class, 'store'])->name('products.reviews.store');
     Route::post('/products/{product}/review/video-upload', [ProductReviewController::class, 'uploadVideo'])->name('products.reviews.uploadVideo');
 
+    Route::delete('reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.delete');
+
 
 });
 

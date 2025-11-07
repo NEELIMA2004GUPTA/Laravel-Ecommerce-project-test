@@ -245,6 +245,18 @@
 
         </div>
     @endif
+    {{-- DELETE BUTTON --}}
+        @auth
+            @if($review->user_id === Auth::id()) 
+                <form action="{{ route('reviews.delete', $review->id) }}" method="POST" class="mt-3">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-600 hover:text-red-800">
+                        Delete Review
+                    </button>
+                </form>
+            @endif
+        @endauth
             </div>
         @empty
             <p class="text-gray-600">No reviews yet.</p>
