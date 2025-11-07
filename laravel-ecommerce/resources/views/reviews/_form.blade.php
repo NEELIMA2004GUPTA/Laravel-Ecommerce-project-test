@@ -39,7 +39,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="block font-medium">Upload Images / Videos (max 1MB each)</label>
+            <label class="block font-medium">Upload Images / Videos (Image - 1MB each & Video - 25 MB each)</label>
             <input type="file" name="images[]" accept="image/*,video/*" multiple class="mt-2" />
         </div>
 

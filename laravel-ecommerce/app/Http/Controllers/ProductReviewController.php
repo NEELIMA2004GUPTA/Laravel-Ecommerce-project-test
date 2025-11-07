@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Routing\Controller as BaseController; 
+use Illuminate\Validation\Rule;
+use Illuminate\Http\UploadedFile;
 
 class ProductReviewController extends BaseController
 {
@@ -27,7 +29,24 @@ class ProductReviewController extends BaseController
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'nullable|mimes:jpg,jpeg,png,mp4,webm,ogg',   
+            // Conditional size validation
+            'images.*' => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,jfif,mp4,webm,ogg',
+                // Image files → max 1MB (1024 KB)
+                Rule::when(
+                    fn ($value) => $value instanceof UploadedFile && str_starts_with($value->getMimeType(), 'image/'),
+                    'max:1024'
+                ),
+
+                // Video files → max 5MB (5120 KB)
+                Rule::when(
+                    fn ($value) => $value instanceof UploadedFile && str_starts_with($value->getMimeType(), 'video/'),
+                    'max:5120'
+                ),
+
+            ],
             'video' => 'nullable|mimetypes:video/webm,video/mp4,video/ogg|max:51200' 
         ]);
 
