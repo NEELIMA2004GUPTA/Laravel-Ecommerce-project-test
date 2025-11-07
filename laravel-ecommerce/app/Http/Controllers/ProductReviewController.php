@@ -27,7 +27,7 @@ class ProductReviewController extends BaseController
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
             'images' => 'nullable|array|max:5',
-            'images.*' => 'nullable|image|max:1024|mimes:jpg,jpeg,png',   
+            'images.*' => 'nullable|mimes:jpg,jpeg,png,mp4,webm,ogg',   
             'video' => 'nullable|mimetypes:video/webm,video/mp4,video/ogg|max:51200' 
         ]);
 
@@ -43,13 +43,40 @@ class ProductReviewController extends BaseController
         ]);
 
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $path = $img->store('reviews/images', 'public');
+            foreach ($request->file('images') as $file) {
+                $extension = $file->getClientOriginalExtension();
+                $size = $file->getSize();
+
+                // Image Size Limit: 1MB
+                if (in_array($extension, ['jpg','jpeg','png','webp','jfif'])) {
+                    if ($size > 1024 * 1024) {
+                        return back()->withErrors(['images' => 'Each image must be less than 1MB']);
+                    }
+                    $type = 'image';
+                }
+
+                // Video Size Limit: 25MB
+                elseif (in_array($extension, ['mp4','webm','ogg'])) {
+                    if ($size > (25 * 1024 * 1024)) {
+                        return back()->withErrors(['images' => 'Each video must be less than 25MB']);
+                    }
+                    $type = 'video';
+                }
+
+                // Any other file type
+                else {
+                    return back()->withErrors(['images' => 'Invalid file format.']);
+                }
+
+                // Store File
+                $path = $file->store('reviews/media', 'public');
+
+                // Save to DB
                 $review->media()->create([
-                    'type' => 'image',
+                    'type' => $type,  // image or video
                     'path' => $path,
-                    'mime' => $img->getClientMimeType(),
-                    'size' => $img->getSize(),
+                    'mime' => $file->getClientMimeType(),
+                    'size' => $size,
                 ]);
             }
         }

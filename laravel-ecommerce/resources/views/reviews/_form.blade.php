@@ -39,8 +39,8 @@
         </div>
 
         <div class="mb-3">
-            <label class="block font-medium">Upload images (max 1MB each)</label>
-            <input type="file" name="images[]" accept="image/*" multiple class="mt-2" />
+            <label class="block font-medium">Upload Images / Videos (max 1MB each)</label>
+            <input type="file" name="images[]" accept="image/*,video/*" multiple class="mt-2" />
         </div>
 
         <div class="mb-3">
@@ -106,16 +106,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Image validation
         if (imageInput.files.length > 0) {
+
             if (imageInput.files.length > 5) {
-                errors.push('You can upload a maximum of 5 images.');
+                errors.push('You can upload a maximum of 5 files (images + videos).');
             }
+
             Array.from(imageInput.files).forEach(file => {
-                if (!file.type.startsWith('image/')) {
-                    errors.push(`File ${file.name} is not an image.`);
-                } else if (file.size > 1 * 1024 * 1024) { // 1MB
-                    errors.push(`File ${file.name} exceeds 5MB.`);
+
+            // Image Validation
+            if (file.type.startsWith('image/')) {
+                if (file.size > 1 * 1024 * 1024) { // 1MB
+                    errors.push(`Image ${file.name} exceeds 1MB.`);
                 }
-            });
+            }
+
+            // Video Validation
+            else if (file.type.startsWith('video/')) {
+                if (file.size > 25 * 1024 * 1024) { // 25MB
+                    errors.push(`Video ${file.name} exceeds 25MB.`);
+                }
+            }
+
+            // Any other file type
+            else {
+                errors.push(`File ${file.name} is not a valid image or video.`);
+            }   
+        });
         }
 
         // Video validation (if recorded)

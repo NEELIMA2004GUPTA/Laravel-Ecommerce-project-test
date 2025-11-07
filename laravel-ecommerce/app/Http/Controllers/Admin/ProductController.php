@@ -50,7 +50,7 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'variants' => 'nullable|array',
             'images' => 'nullable|array',   
-            'images.*' => 'image|mimes:jpeg,png,jpg,jfif,webp,,mp4,webm,ogg', 
+            'images.*' => 'mimes:jpeg,png,jpg,jfif,webp,,mp4,webm,ogg', 
             'images.*' => [
                 function ($attribute, $value, $fail) {
                     $mime = $value->getMimeType();

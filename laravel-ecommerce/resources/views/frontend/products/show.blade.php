@@ -172,17 +172,31 @@
                 </div>
                 <p class="mt-2">{{ $review->comment }}</p>
 
-                @if($review->media)
-                <div class="flex gap-3 mt-2">
+                @if($review->media && $review->media->count())
+                    <div class="flex flex-wrap gap-3 mt-3">
+
                     @foreach($review->media as $m)
-                        @if($m->type === 'image')
-                            <img src="{{ Storage::url($m->path) }}" class="w-24 h-24 rounded object-cover">
-                        @else
-                            <video controls class="w-64 h-40"><source src="{{ Storage::url($m->path) }}"></video>
-                        @endif
-                    @endforeach
-                </div>
+                        @php
+                            $url = Storage::url($m->path);
+                        @endphp
+
+                    @if($m->type === 'image')
+                
+                    {{-- IMAGE --}}
+                    <img src="{{ $url }}" class="w-24 h-24 object-cover rounded-md shadow">
+
+                    @elseif($m->type === 'video')
+                
+                    {{-- VIDEO (Both pre-recorded & user-recorded) --}}
+                    <video controls class="w-28 h-20 rounded-md shadow bg-black">
+                        <source src="{{ $url }}" type="{{ $m->mime }}">
+                    </video>
+
                 @endif
+            @endforeach
+
+        </div>
+    @endif
             </div>
         @empty
             <p class="text-gray-600">No reviews yet.</p>

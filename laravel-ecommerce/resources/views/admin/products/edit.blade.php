@@ -76,7 +76,7 @@
                      style="object-fit:cover; border-radius:6px;">
                 @elseif(isVideoFile($image))
                     <video src="{{ asset('storage/' . $image) }}" 
-                        class="w-[100px] h-[100px] object-cover rounded"
+                        class="w-28 h-20 object-cover rounded"
                         muted
                         playsinline
                         onmouseover="this.play()" 
