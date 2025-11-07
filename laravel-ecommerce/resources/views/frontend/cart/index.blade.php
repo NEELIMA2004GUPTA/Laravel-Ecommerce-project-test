@@ -51,12 +51,6 @@
                             value="{{ $item['quantity'] }}"
                             min="1"
                             max="{{ $item['stock'] }}">
-                            
-                        @if($item['quantity'] >= $item['stock'])
-                            <p class="text-xs text-red-500 font-medium">
-                                Maximum stock reached.
-                            </p>
-                        @endif
 
                         <a href="{{ route('cart.remove', $id) }}" class="text-red-600 font-bold hover:underline">x</a>
                     </form>
