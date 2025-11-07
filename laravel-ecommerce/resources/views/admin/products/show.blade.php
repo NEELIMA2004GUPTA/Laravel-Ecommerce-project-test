@@ -20,34 +20,56 @@
         <!-- Product Images Section -->
        <div>
         @php
-        $images = is_array($product->images)
-            ? $product->images
-            : json_decode($product->images ?? '[]', true);
-        $count = count($images);
+            $mediaFiles = is_array($product->images)
+                ? $product->images
+                : json_decode($product->images ?? '[]', true);
+
+            $count = count($mediaFiles);
+
+            function isImage($file) {
+                return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
+            }
+
+            function isVideo($file) {
+                return preg_match('/\.(mp4|webm|ogg)$/i', $file);
+            }
+
         @endphp
 
         @if($count === 1)
             {{--  Single Image → Center --}}
             <div class="flex justify-center">
-                <img src="{{ asset('storage/' . $images[0]) }}" 
-                    alt="{{ $product->title }}"
-                    class="rounded-lg shadow-md object-cover w-72 h-72 border">
+                 @php $file = $mediaFiles[0]; @endphp
+                 @if(isImage($file))
+                    <img src="{{ asset('storage/' . $file) }}" 
+                     class="rounded-lg shadow-md object-cover w-72 h-72 border">
+                @elseif(isVideo($file))
+                    <video src="{{ asset('storage/' . $file) }}" 
+                       controls 
+                       class="rounded-lg shadow-md w-72 h-72 border"></video>
+                @endif
+                
             </div>
 
         @elseif($count > 1)
             {{-- Multiple Images → Grid --}}
             <div class="grid grid-cols-2 gap-3">
-                @foreach($images as $img)
-                    <img src="{{ asset('storage/' . $img) }}" 
-                        alt="{{ $product->title }}" 
-                        class="rounded-lg shadow-md object-cover w-full h-48 border">
+                @foreach ($mediaFiles as $file)
+                    @if(isImage($file))
+                        <img src="{{ asset('storage/' . $file) }}" 
+                         class="rounded-lg shadow-md object-cover w-full h-48 border">
+                    @elseif(isVideo($file))
+                        <video src="{{ asset('storage/' . $file) }}" 
+                           controls 
+                           class="rounded-lg shadow-md w-full h-48 border"></video>
+                    @endif
                 @endforeach
             </div>
 
         @else
             {{-- No Images --}}
             <div class="bg-gray-100 text-gray-500 p-10 rounded text-center">
-                No Images Available
+                No Media Available
             </div>
         @endif
     </div>

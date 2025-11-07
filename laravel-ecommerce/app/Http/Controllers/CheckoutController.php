@@ -26,7 +26,9 @@ class CheckoutController extends Controller
     public function placeOrder(Request $request){
         $request->validate([
             'name' => 'required',
+            'country_code' => 'required',
             'phone' => 'required|digits:10',
+            'pincode' => 'required|digits:6',
             'address' => 'required',
             'payment_method' => 'required'
         ]);
@@ -37,14 +39,18 @@ class CheckoutController extends Controller
         }
 
         $total = array_reduce($cart, function ($sum, $item) {
-            return $sum + ($item['price'] * $item['qty']);
+            return $sum + ($item['price'] * $item['quantity']);
         }, 0);
+
+        // Combine country code with phone
+        $fullPhone = $request->country_code . $request->phone;
 
         // Create order
         $order = Order::create([
             'user_id' => Auth::id(),
             'name' => $request->name,
-            'phone' => $request->phone,
+            'phone' => $fullPhone,                
+            'pincode' => $request->pincode,
             'address' => $request->address,
             'payment_method' => $request->payment_method,
             'notes' => $request->notes ?? null,
@@ -60,12 +66,12 @@ class CheckoutController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $productId,
-                'quantity' => $item['qty'],
+                'quantity' => $item['quantity'],
                 'price' => $item['price'],
             ]);
 
         // Reduce stock
-        Product::where('id', $productId)->decrement('stock', $item['qty']);
+        Product::where('id', $productId)->decrement('stock', $item['quantity']);
         }
 
         // Empty cart session
@@ -84,7 +90,7 @@ class CheckoutController extends Controller
         }
 
         // allow cancellation only if Pending or Shipped
-        if (!in_array($order->status, ['Pending', 'Shipped'])) {
+        if (!in_array($order->status, ['Pending', 'Confirmed'])) {
             return back()->with('error', 'This order cannot be cancelled.');
         }
 

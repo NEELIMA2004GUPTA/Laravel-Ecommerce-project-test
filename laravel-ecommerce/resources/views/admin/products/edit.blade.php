@@ -1,5 +1,17 @@
 <x-app-layout>
+@php
+    if (!function_exists('isImageFile')) {
+        function isImageFile($file) {
+            return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
+        }
+    }
 
+    if (!function_exists('isVideoFile')) {
+        function isVideoFile($file) {
+            return preg_match('/\.(mp4|webm|ogg)$/i', $file);
+        }
+    }
+@endphp
 <div class="max-w-3xl mx-auto bg-white shadow p-6 rounded">
     @if ($errors->any())
         <div class="bg-red-100 text-red-700 p-2 rounded mb-4">
@@ -58,9 +70,21 @@
 
         @foreach($imgs as $image)
             <div style="position: relative; display:inline-block; margin:10px;">
-                <img src="{{ asset('storage/' . $image) }}" width="100" height="100" style="object-fit:cover; border-radius:6px;">
+                @if(isImageFile($image))
+                    <img src="{{ asset('storage/' . $image) }}" 
+                     width="100" height="100"
+                     style="object-fit:cover; border-radius:6px;">
+                @elseif(isVideoFile($image))
+                    <video src="{{ asset('storage/' . $image) }}" 
+                        class="w-[100px] h-[100px] object-cover rounded"
+                        muted
+                        playsinline
+                        onmouseover="this.play()" 
+                        onmouseout="this.pause(); this.currentTime = 0;">
+                    </video>
+                @endif
                 <!-- Hidden checkbox to submit delete request -->
-                 <input type="checkbox" name="remove_images[]" value="{{ $image }}" class="remove-image-checkbox" style="display:none;">
+                <input type="checkbox" name="remove_images[]" value="{{ $image }}" class="remove-image-checkbox" style="display:none;">
                 <!-- Delete Button -->
                 <button type="button"
                     onclick="this.previousElementSibling.checked = true; this.parentElement.style.display='none';"
@@ -73,7 +97,7 @@
         </div>
 
         <label class="font-semibold">Add More Images</label>
-        <input type="file" name="images[]" multiple class="w-full border p-2 mb-4 form-control">
+        <input type="file" name="images[]" multiple accept="image/*,video/*" class="w-full border p-2 mb-4 form-control">
 
         <button class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
     </form>

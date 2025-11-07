@@ -93,9 +93,15 @@
 
         {{-- Images --}}
         <div>
-            <label class="block font-medium">Product Images</label>
-            <input type="file" name="images[]" multiple accept="image/*" class="w-full border rounded px-3 py-2">
-            <p>Allowed Image formats - '.jpg, .jpeg, .webp, .jfif, .png' only !</p>
+            <label class="block font-medium">Product Media (Images or Videos)</label>
+            <input type="file" name="images[]" multiple accept="image/*,video/*" class="w-full border rounded px-3 py-2">
+
+            <p>Allowed formats:</p>
+            <ul class="list-disc pl-5 text-sm text-gray-600">
+                <li>Images: .jpg, .jpeg, .png, .webp, .jfif</li>
+                <li>Videos: .mp4, .webm, .ogg</li>
+            </ul>
+
             @error('images.*')
                 <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
             @enderror

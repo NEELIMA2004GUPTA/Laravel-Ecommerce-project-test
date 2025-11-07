@@ -1,4 +1,12 @@
 <x-app-layout>
+@php
+    function isImageFile($file) {
+        return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
+    }
+    function isVideoFile($file) {
+        return preg_match('/\.(mp4|webm|ogg)$/i', $file);
+    }
+@endphp
     
 <div class="max-w-7xl mx-auto py-10 px-4" x-data="{ openFilters: false }">
 
@@ -85,12 +93,18 @@
 
                         <div class="relative">
                             @if($img)
-                                <img src="{{ asset('storage/' . $img) }}"
-                                     class="h-56 w-full object-cover rounded-t-lg">
+                                @if(isImageFile($img))
+                                    <img src="{{ asset('storage/' . $img) }}"
+                                    class="h-56 w-full object-cover rounded-t-lg">
+                                @elseif(isVideoFile($img))
+                                    <video src="{{ asset('storage/' . $img) }}" 
+                                    controls 
+                                    class="h-56 w-full object-cover rounded-t-lg"></video>
+                                @endif
                             @else
                                 <div class="h-56 w-full bg-gray-200 rounded-t-lg flex items-center justify-center text-gray-500">
-                                    No Image
-                                </div>
+                                    No Media
+                            </div>
                             @endif
 
                             @if($product->discount > 0)

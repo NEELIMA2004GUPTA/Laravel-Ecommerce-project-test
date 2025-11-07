@@ -1,4 +1,13 @@
 <x-app-layout>
+@php
+    function isImageFile($file) {
+        return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
+    }
+    function isVideoFile($file) {
+        return preg_match('/\.(mp4|webm|ogg)$/i', $file);
+    }
+@endphp
+
 <div class="max-w-6xl mx-auto py-10 px-4">
 
     @if (session('success'))
@@ -18,21 +27,41 @@
         {{-- Product Images --}}
         @php
             $images = is_array($product->images) ? $product->images : json_decode($product->images ?? '[]', true);
+            // First media file
+            $first = $images[0] ?? null;
             $defaultImage = count($images) ? asset('storage/' . $images[0]) : 'https://via.placeholder.com/400';
         @endphp
 
-        <div x-data="{ activeImage: '{{ $defaultImage }}' }">
-            <img :src="activeImage" class="w-full h-96 object-cover rounded-lg shadow transition duration-200">
+        <div x-data="{ activeMedia: '{{ $defaultImage }}', activeType: '{{ isImageFile($first) ? 'image' : 'video' }}' }">
+
+            <template x-if="activeType === 'image'">
+                <img :src="activeMedia" class="w-full h-96 object-cover rounded-lg shadow transition duration-200">
+            </template>
+
+            <template x-if="activeType === 'video'">
+                <video :src="activeMedia" controls class="w-full h-96 rounded-lg shadow"></video>
+            </template>
 
             <div class="flex gap-3 mt-4 overflow-x-auto">
-                @foreach($images as $img)
-                    @php $thumb = asset('storage/' . $img); @endphp
-                    <img src="{{ $thumb }}" @click="activeImage = '{{ $thumb }}'"
-                        class="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition"
-                        :class="activeImage === '{{ $thumb }}' ? 'ring-2 ring-blue-500' : ''">
-                @endforeach
-            </div>
+            @foreach($images as $img)
+                @php 
+                    $src = asset('storage/' . $img); 
+                    $type = isImageFile($img) ? 'image' : 'video';
+                 @endphp
+
+                <div @click="activeMedia = '{{ $src }}'; activeType = '{{ $type }}'"
+                 class="cursor-pointer border rounded overflow-hidden p-0.5"
+                 :class="activeMedia === '{{ $src }}' ? 'ring-2 ring-blue-500' : ''">
+
+                @if($type === 'image')
+                    <img src="{{ $src }}" class="w-20 h-20 object-cover rounded">
+                @else
+                    <video src="{{ $src }}" class="w-20 h-20 rounded object-cover"></video>
+                @endif
+                </div>
+            @endforeach
         </div>
+    </div>
 
         {{-- Product Info --}}
         <div>

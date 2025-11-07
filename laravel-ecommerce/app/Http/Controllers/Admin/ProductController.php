@@ -50,7 +50,22 @@ class ProductController extends Controller
             'stock' => 'required|integer|min:0',
             'variants' => 'nullable|array',
             'images' => 'nullable|array',   
-            'images.*' => 'image|mimes:jpeg,png,jpg,jfif,webp|max:2048', 
+            'images.*' => 'image|mimes:jpeg,png,jpg,jfif,webp,,mp4,webm,ogg', 
+            'images.*' => [
+                function ($attribute, $value, $fail) {
+                    $mime = $value->getMimeType();
+
+                    // Image Size Limit: 1MB (1024 KB)
+                    if (str_starts_with($mime, 'image/') && $value->getSize() > 1024 * 1024) {
+                        return $fail('Each image must be less than 1MB.');
+                    }
+
+                    // Video Size Limit: 25MB (25 * 1024 * 1024 bytes)
+                    if (str_starts_with($mime, 'video/') && $value->getSize() > 25 * 1024 * 1024) {
+                        return $fail('Each video must be less than 25MB.');
+                    }
+                }
+            ]
         ]);
 
         $data = $request->only(['title', 'description', 'category_id', 'price', 'discount', 'sku', 'stock']);
@@ -58,8 +73,21 @@ class ProductController extends Controller
         // Handle Multiple Images
         $imagePaths = [];
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
+            foreach ($request->file('images') as $file) {
+                // Check File Type
+                $mime = $file->getMimeType();
+
+                if (str_starts_with($mime, 'image/')) {
+                    // Save Images in products/images
+                    $path = $file->store('products/images', 'public');
+                } 
+                elseif (str_starts_with($mime, 'video/')) {
+                    // Save Videos in products/videos
+                    $path = $file->store('products/videos', 'public');
+                } 
+                else {
+                    continue; // Skip unknown types (should not occur because of validation)
+            }
                 $imagePaths[] = $path;
             }
         }
