@@ -13,7 +13,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                 @auth
-                @if (Auth::user()->role === 'admin')
+            @if (Auth::user()->role === 'admin')
 
                     <!-- Admin Panel Links -->
                     <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
@@ -50,7 +50,7 @@
                     {{ __('Wishlist')}}
                 </x-nav-link>
 
-                <x-nav-link :href="route('orders')" :active="request()->routeIs('orders')">
+                <x-nav-link :href="route('orders')" :active="request()->routeIs('orders.*')">
                     {{ __('My Orders')}}
                 </x-nav-link>
 

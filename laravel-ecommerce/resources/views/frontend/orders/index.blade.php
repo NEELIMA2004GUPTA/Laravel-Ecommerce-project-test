@@ -2,19 +2,25 @@
     <div class="max-w-6xl mx-auto px-4 py-10">
 
         <h1 class="text-3xl font-bold mb-8">My Orders</h1>
+        <!-- Back to Products -->
+        <a href="{{ route('products.index') }}" 
+           class="inline-block mb-6 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+           ← Back to Products
+        </a>
 
+        <!-- Flash Messages -->
         @if (session('success'))
             <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
                 {{ session('success') }}
             </div>
         @endif
-
         @if (session('error'))
             <div class="bg-red-100 text-red-800 p-2 rounded mb-3">
                 {{ session('error') }}
             </div>
         @endif
 
+        <!-- No Orders -->
         @if($orders->count() == 0)
             <div class="text-center py-20">
                 <p class="text-gray-600 text-xl">You haven't placed any orders yet.</p>
@@ -68,56 +74,55 @@
                     </div>
 
                     <!-- Items List -->
-                    <div class="mt-5 border-t pt-4">
+                    <div class="mt-5 border-t pt-4 space-y-4">
                         <h3 class="font-semibold mb-3 text-gray-700">Order Items</h3>
 
-                        <div class="space-y-3">
-                            @foreach($order->items as $item)
-                            <div class="flex items-center gap-4 bg-gray-50 rounded-lg p-3 border">
-                                @php
-                                    $imgs = is_array($item->product->images)
-                                        ? $item->product->images
-                                        : json_decode($item->product->images, true);
-                                    $img = $imgs[0] ?? null;
-                                @endphp
+                        @foreach($order->items as $item)
+                        <div class="flex items-center gap-4 bg-gray-50 rounded-lg p-3 border">
 
-                                <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
-                                     class="w-16 h-16 object-cover rounded">
+                            @php
+                                $imgs = is_array($item->product->images)
+                                    ? $item->product->images
+                                    : json_decode($item->product->images, true);
+                                $img = $imgs[0] ?? null;
+                            @endphp
 
-                                <div>
-                                    <p class="font-medium">{{ $item->product->title }}</p>
-                                    <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
-                                    <p class="font-semibold text-gray-800">₹{{ $item->price }}</p>
-                                </div>
+                            <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
+                                 class="w-16 h-16 object-cover rounded">
 
-                                @if($order->status == 'Delivered')
-                                <!-- Review Button -->
-                                <div class="ml-auto">
-                                    <button data-toggle="collapse" data-target="#reviewBox-{{ $item->id }}"
-                                        class="px-3 py-1 bg-indigo-600 text-white rounded">
-                                        Add Review
-                                    </button>
-                                </div>
-                                @endif
+                            <div class="flex-1">
+                                <p class="font-medium">{{ $item->product->title }}</p>
+                                <p class="text-sm text-gray-500">Qty: {{ $item->quantity }}</p>
+                                <p class="font-semibold text-gray-800">₹{{ $item->price }}</p>
                             </div>
 
                             @if($order->status == 'Delivered')
-                            <!-- Review Form Collapse -->
-                            <div id="reviewBox-{{ $item->id }}" class="mt-3 border p-4 rounded bg-white hidden">
-                                @include('reviews._form', ['product' => $item->product])
+                            <div class="flex-shrink-0">
+                                <button data-toggle="collapse" data-target="#reviewBox-{{ $item->id }}"
+                                    class="px-3 py-1 bg-indigo-600 text-white rounded">
+                                    Add Review
+                                </button>
                             </div>
                             @endif
-                            @endforeach
                         </div>
+
+                        @if($order->status == 'Delivered')
+                        <div id="reviewBox-{{ $item->id }}" class="mt-3 border p-4 rounded bg-white hidden">
+                            @if($item->product)
+                                @include('reviews._form', ['product' => $item->product])
+                            @endif
+                        </div>
+                        @endif
+
+                        @endforeach
                     </div>
 
+                    <!-- Totals -->
                     @php
                         $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
                         $tax = ($subTotal * 5) / 100;
                         $grandTotal = $subTotal + $tax;
                     @endphp
-
-                    <!-- Total -->
                     <div class="mt-4 text-right text-xl font-bold text-gray-800">
                         Subtotal: ₹{{ number_format($subTotal, 2) }} <br>
                         Tax (5%): ₹{{ number_format($tax, 2) }} <br>
@@ -130,95 +135,17 @@
         @endif
     </div>
 
-<script>
-document.querySelectorAll('[data-toggle="collapse"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const target = document.querySelector(btn.dataset.target);
-        target.classList.toggle('hidden');
-
-        if (!target.classList.contains('hidden')) {
-            const form = target.querySelector('form');
-            if (!form.dataset.listenersAttached) {
-                attachReviewValidation(form);
-                form.dataset.listenersAttached = "true";
-            }
-        }
-    });
-});
-
-function attachReviewValidation(form) {
-    const stars = form.querySelectorAll('.star-btn');
-    const ratingInput = form.querySelector('input[name="rating"]');
-    const ratingError = document.createElement('p');
-    ratingError.className = 'text-red-600 mt-1';
-    form.appendChild(ratingError);
-
-    const commentInput = form.querySelector('textarea[name="comment"]');
-    const commentError = document.createElement('p');
-    commentError.className = 'text-red-600 mt-1';
-    form.appendChild(commentError);
-
-    const imageInput = form.querySelector('input[name="images[]"]');
-    const mediaError = document.createElement('p');
-    mediaError.className = 'text-red-600 mt-1';
-    form.appendChild(mediaError);
-
-    stars.forEach(btn => {
+    <!-- Collapse Script -->
+    <script>
+    document.querySelectorAll('[data-toggle="collapse"]').forEach(btn => {
         btn.addEventListener('click', () => {
-            ratingInput.value = btn.dataset.value;
-            stars.forEach(s => {
-                const svg = s.querySelector('svg');
-                svg.classList.remove('text-yellow-400');
-                svg.classList.add('text-gray-300');
-                if (parseInt(s.dataset.value) <= parseInt(btn.dataset.value)) {
-                    svg.classList.add('text-yellow-400');
-                    svg.classList.remove('text-gray-300');
-                }
-            });
-            ratingError.textContent = '';
+            const target = document.querySelector(btn.dataset.target);
+            target.classList.toggle('hidden');
+            if (!target.classList.contains('hidden')) {
+                const firstInput = target.querySelector('input, textarea, select');
+                if (firstInput) firstInput.focus();
+            }
         });
     });
-
-    commentInput.addEventListener('input', () => {
-        const val = commentInput.value.trim();
-        if (!val) commentError.textContent = 'Comment is required.';
-        else if (val.length > 1000) commentError.textContent = 'Comment cannot exceed 1000 characters.';
-        else commentError.textContent = '';
-    });
-
-    imageInput.addEventListener('change', () => {
-        const files = imageInput.files;
-        mediaError.textContent = '';
-        if (files.length > 5) { mediaError.textContent = 'Max 5 files allowed.'; return; }
-        for (const file of files) {
-            if (file.type.startsWith('image/') && file.size > 1*1024*1024) {
-                mediaError.textContent = `Image ${file.name} exceeds 1MB.`; return;
-            }
-            if (file.type.startsWith('video/') && file.size > 25*1024*1024) {
-                mediaError.textContent = `Video ${file.name} exceeds 25MB.`; return;
-            }
-        }
-    });
-
-    form.addEventListener('submit', e => {
-        let hasError = false;
-        if (!ratingInput.value) { ratingError.textContent = 'Please select a rating.'; hasError = true; }
-        const commentVal = commentInput.value.trim();
-        if (!commentVal) { commentError.textContent = 'Comment is required.'; hasError = true; }
-        else if (commentVal.length > 1000) { commentError.textContent = 'Comment cannot exceed 1000 characters.'; hasError = true; }
-
-        if (imageInput.files.length > 0) {
-            const files = imageInput.files;
-            if (files.length > 5) { mediaError.textContent = 'Max 5 files allowed.'; hasError = true; }
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/') && file.size > 1*1024*1024) { mediaError.textContent = `Image ${file.name} exceeds 1MB.`; hasError = true; }
-                if (file.type.startsWith('video/') && file.size > 25*1024*1024) { mediaError.textContent = `Video ${file.name} exceeds 25MB.`; hasError = true; }
-            });
-        }
-
-        if (hasError) e.preventDefault();
-    });
-}
-</script>
-
+    </script>
 </x-app-layout>

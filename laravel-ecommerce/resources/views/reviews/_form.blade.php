@@ -1,6 +1,6 @@
 <div class="max-w-3xl mx-auto py-6">
 
-    <h2 class="text-2xl font-bold mb-4">Add Review </h2>
+    <h2 class="text-2xl font-bold mb-4">Add Review</h2>
 
     <a href="{{ route('product.show', $product->slug) }}" class="inline-block mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
         ← Back to Product
@@ -44,8 +44,13 @@
         <!-- Upload Images/Videos -->
         <div class="mb-3">
             <label class="block font-medium">Upload Images / Videos (Image - 1MB each & Video - 25 MB each)</label>
-            <input type="file" name="images[]" accept="image/*,video/*" multiple class="mt-2" />
+            <div id="dropArea" 
+                class="mt-2 border-2 border-dashed border-gray-400 rounded p-4 text-center cursor-pointer hover:border-gray-600">
+                    Drag & Drop files here or click to select
+            </div>
+            <input type="file" id="fileInput" name="images[]" accept="image/*,video/*" multiple class="hidden">
             <p class="text-sm text-red-600 mt-1 hidden" id="mediaError"></p>
+            <div id="filePreview" class="mt-2 flex flex-wrap gap-2"></div>
         </div>
 
         <!-- Record Video -->
@@ -74,17 +79,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+    // === Star Rating ===
     const stars = document.querySelectorAll('.star-btn');
     const ratingInput = document.getElementById('ratingInput');
     const ratingError = document.getElementById('ratingError');
-    const commentInput = document.querySelector('textarea[name="comment"]');
-    const commentError = document.getElementById('commentError');
-    const imageInput = document.querySelector('input[name="images[]"]');
-    const mediaError = document.getElementById('mediaError');
-    const form = document.getElementById('reviewForm');
-    const videoInput = document.getElementById('videoFileInput');
-
-    // Star rating dynamic
     stars.forEach(btn => {
         btn.addEventListener('click', () => {
             ratingInput.value = btn.dataset.value;
@@ -101,113 +99,130 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Live validation for comment
+    // === Comment validation ===
+    const commentInput = document.querySelector('textarea[name="comment"]');
+    const commentError = document.getElementById('commentError');
     commentInput.addEventListener('input', () => {
         const val = commentInput.value.trim();
-        if (!val) {
-            commentError.textContent = 'Comment is required.';
-            commentError.classList.remove('hidden');
-        } else if (val.length > 1000) {
-            commentError.textContent = 'Comment cannot exceed 1000 characters.';
-            commentError.classList.remove('hidden');
-        } else {
-            commentError.classList.add('hidden');
-        }
+        if(!val) { commentError.textContent='Comment is required'; commentError.classList.remove('hidden'); }
+        else if(val.length>1000){ commentError.textContent='Comment cannot exceed 1000 characters'; commentError.classList.remove('hidden'); }
+        else commentError.classList.add('hidden');
     });
 
-    // Live validation for files
-    imageInput.addEventListener('change', () => {
+    // === File Upload Logic ===
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const mediaError = document.getElementById('mediaError');
+    let allFiles = [];
+
+    function addFiles(files){
         mediaError.classList.add('hidden');
-        const files = imageInput.files;
-        if (files.length > 5) {
-            mediaError.textContent = 'You can upload a maximum of 5 files.';
-            mediaError.classList.remove('hidden');
-            return;
-        }
-        for (const file of files) {
-            if (file.type.startsWith('image/') && file.size > 1*1024*1024) {
-                mediaError.textContent = `Image ${file.name} exceeds 1MB.`;
-                mediaError.classList.remove('hidden');
-                return;
-            }
-            if (file.type.startsWith('video/') && file.size > 25*1024*1024) {
-                mediaError.textContent = `Video ${file.name} exceeds 25MB.`;
-                mediaError.classList.remove('hidden');
-                return;
-            }
-            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-                mediaError.textContent = `File ${file.name} is not a valid image or video.`;
-                mediaError.classList.remove('hidden');
-                return;
-            }
-        }
-    });
+        const maxFiles = 5;
+        const maxImageSize = 1*1024*1024;
+        const maxVideoSize = 25*1024*1024;
+        let errors = [];
 
-    // Form submit validation
-    form.addEventListener('submit', e => {
-        let hasError = false;
+        Array.from(files).forEach(file=>{
+            if(file.type.startsWith('image/')){
+                if(file.size>maxImageSize){ errors.push(`${file.name} exceeds 1MB`); return; }
+                allFiles.push(file);
+            } else if(file.type.startsWith('video/')){
+                if(file.size>maxVideoSize){ errors.push(`${file.name} exceeds 25MB`); return; }
+                allFiles.push(file);
+            } else { errors.push(`${file.name} is not a valid image/video`); }
+        });
 
-        if (!ratingInput.value) {
-            ratingError.textContent = 'Please select a rating.';
-            ratingError.classList.remove('hidden');
-            hasError = true;
-        }
+        if(allFiles.length>maxFiles){ errors.push(`You can upload a maximum of ${maxFiles} files.`); allFiles = allFiles.slice(0,maxFiles); }
 
-        const commentVal = commentInput.value.trim();
-        if (!commentVal) {
-            commentError.textContent = 'Comment is required.';
-            commentError.classList.remove('hidden');
-            hasError = true;
-        } else if (commentVal.length > 1000) {
-            commentError.textContent = 'Comment cannot exceed 1000 characters.';
-            commentError.classList.remove('hidden');
-            hasError = true;
-        }
+        if(errors.length){ mediaError.textContent=errors.join(', '); mediaError.classList.remove('hidden'); }
 
-        if (imageInput.files.length > 0) {
-            const files = imageInput.files;
-            if (files.length > 5) {
-                mediaError.textContent = 'You can upload a maximum of 5 files.';
-                mediaError.classList.remove('hidden');
-                hasError = true;
+        renderPreviews();
+
+        // Assign files for form submission
+        const dt = new DataTransfer();
+        allFiles.forEach(f=>dt.items.add(f));
+        fileInput.files = dt.files;
+
+        fileInput.value='';
+    }
+
+    function renderPreviews(){
+        filePreview.innerHTML='';
+        allFiles.forEach((file,index)=>{
+            const div = document.createElement('div');
+            div.classList.add('relative');
+
+            if(file.type.startsWith('image/')){
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.classList.add('w-24','h-24','object-cover','rounded');
+                div.appendChild(img);
+            } else if(file.type.startsWith('video/')){
+                const video = document.createElement('video');
+                video.src = URL.createObjectURL(file);
+                video.controls=true;
+                video.classList.add('w-32','h-24','rounded');
+                div.appendChild(video);
             }
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/') && file.size > 1*1024*1024) {
-                    mediaError.textContent = `Image ${file.name} exceeds 1MB.`;
-                    mediaError.classList.remove('hidden');
-                    hasError = true;
-                }
-                if (file.type.startsWith('video/') && file.size > 25*1024*1024) {
-                    mediaError.textContent = `Video ${file.name} exceeds 25MB.`;
-                    mediaError.classList.remove('hidden');
-                    hasError = true;
-                }
+
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type='button';
+            removeBtn.textContent='×';
+            removeBtn.classList.add('absolute','top-0','right-0','bg-red-500','text-white','rounded-full','w-5','h-5','flex','items-center','justify-center','text-sm','cursor-pointer');
+            removeBtn.addEventListener('click',()=>{
+                allFiles.splice(index,1);
+                renderPreviews();
+                const dt = new DataTransfer();
+                allFiles.forEach(f=>dt.items.add(f));
+                fileInput.files=dt.files;
             });
-        }
+            div.appendChild(removeBtn);
 
-        if (hasError) e.preventDefault();
+            filePreview.appendChild(div);
+        });
+    }
+
+    // Click & Drag
+    dropArea.addEventListener('click',()=>fileInput.click());
+    fileInput.addEventListener('change',()=>addFiles(fileInput.files));
+    dropArea.addEventListener('dragover',e=>{ e.preventDefault(); dropArea.classList.add('border-gray-600','bg-gray-50'); });
+    dropArea.addEventListener('dragleave',e=>{ e.preventDefault(); dropArea.classList.remove('border-gray-600','bg-gray-50'); });
+    dropArea.addEventListener('drop',e=>{ e.preventDefault(); dropArea.classList.remove('border-gray-600','bg-gray-50'); addFiles(e.dataTransfer.files); });
+
+    // === Form Submit Validation ===
+    const form = document.getElementById('reviewForm');
+    form.addEventListener('submit', e=>{
+        let hasError=false;
+        if(!ratingInput.value){ ratingError.textContent='Please select a rating'; ratingError.classList.remove('hidden'); hasError=true; }
+        const val = commentInput.value.trim();
+        if(!val){ commentError.textContent='Comment is required'; commentError.classList.remove('hidden'); hasError=true; }
+        else if(val.length>1000){ commentError.textContent='Comment cannot exceed 1000 characters'; commentError.classList.remove('hidden'); hasError=true; }
+        if(hasError) e.preventDefault();
     });
 
-    // WebRTC Video recorder logic (unchanged)
+    // === WebRTC Video Recorder ===
     const preview = document.getElementById('preview');
     const startBtn = document.getElementById('startRec');
     const stopBtn = document.getElementById('stopRec');
     const uploadBtn = document.getElementById('uploadRec');
     const recStatus = document.getElementById('recStatus');
+    const videoInput = document.getElementById('videoFileInput');
     let mediaRecorder, recordedBlobs, localStream;
 
     async function initMedia() {
-        try { localStream = await navigator.mediaDevices.getUserMedia({ video:true,audio:true }); preview.srcObject = localStream; }
+        try { localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true}); preview.srcObject = localStream; }
         catch(e){ recStatus.textContent='Camera/mic access denied.'; }
     }
 
-    startBtn.addEventListener('click', async () => {
+    startBtn.addEventListener('click', async ()=>{
         await initMedia();
         recordedBlobs=[];
         const options={ mimeType:'video/webm;codecs=vp8,opus' };
         try { mediaRecorder=new MediaRecorder(localStream,options); }
         catch(e){ recStatus.textContent='Recorder not supported.'; return; }
-        mediaRecorder.ondataavailable=e=>{ if(e.data && e.data.size) recordedBlobs.push(e.data); };
+        mediaRecorder.ondataavailable = e => { if(e.data && e.data.size) recordedBlobs.push(e.data); };
         mediaRecorder.start(1000);
         startBtn.disabled=true; stopBtn.disabled=false; uploadBtn.disabled=true;
         recStatus.textContent='Recording...';
@@ -217,21 +232,22 @@ document.addEventListener('DOMContentLoaded', function () {
         mediaRecorder.stop(); localStream.getTracks().forEach(t=>t.stop());
         startBtn.disabled=false; stopBtn.disabled=true; uploadBtn.disabled=false;
         recStatus.textContent='Recording stopped.';
-        const blob=new Blob(recordedBlobs,{type:recordedBlobs[0]?.type||'video/webm'});
-        const file=new File([blob],`review_${Date.now()}.webm`,{type:blob.type});
-        const dt=new DataTransfer(); dt.items.add(file); videoInput.files=dt.files;
+        const blob = new Blob(recordedBlobs, {type:recordedBlobs[0]?.type||'video/webm'});
+        const file = new File([blob],`review_${Date.now()}.webm`,{type:blob.type});
+        const dt = new DataTransfer(); dt.items.add(file); videoInput.files=dt.files;
     });
 
     uploadBtn.addEventListener('click', async ()=>{
         if(!videoInput.files.length) return alert('No video recorded');
-        const file=videoInput.files[0];
-        const fd=new FormData(); fd.append('_token','{{ csrf_token() }}'); fd.append('video',file);
+        const file = videoInput.files[0];
+        const fd = new FormData(); fd.append('_token','{{ csrf_token() }}'); fd.append('video',file);
         recStatus.textContent='Uploading video...';
-        const res=await fetch('{{ route("products.reviews.uploadVideo",$product) }}',{method:'POST',body:fd});
-        const data=await res.json();
-        recStatus.textContent=data.success?'Video uploaded successfully':'Upload failed';
+        const res = await fetch('{{ route("products.reviews.uploadVideo",$product) }}',{method:'POST',body:fd});
+        const data = await res.json();
+        recStatus.textContent = data.success ? 'Video uploaded successfully' : 'Upload failed';
         if(data.success) uploadBtn.disabled=true;
     });
+
 });
 </script>
 
