@@ -27,7 +27,7 @@
         <form action="{{ route('admin.orders.updateStatus', $order->id) }}" method="POST" class="mb-6">
             @csrf
             <label class="font-semibold">Update Status:</label>
-            <select name="status" class="border rounded p-2">
+            <select name="status" class="border rounded p-2 w-64">
                 <option {{ $order->status == 'Pending' ? 'selected':'' }}>Pending</option>
                 <option {{ $order->status == 'Confirmed' ? 'selected':'' }}>Confirmed</option>
                 <option {{ $order->status == 'Shipped' ? 'selected':'' }}>Shipped</option>
