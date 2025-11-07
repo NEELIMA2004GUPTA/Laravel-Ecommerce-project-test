@@ -83,6 +83,54 @@
                     <p class="text-3xl font-semibold text-gray-800">₹{{ number_format($product->price, 2) }}</p>
                 @endif
             </div>
+            
+            @php
+                $variants = [];
+                if (!empty($product->variants)) {
+                    $raw = json_decode($product->variants, true);
+
+                        if (is_array($raw)) {
+                            foreach ($raw as $item) {
+                                if (str_contains($item, ':')) {
+                                    [$key, $value] = explode(':', $item, 2);
+                                    $variants[strtolower(trim($key))][] = trim($value);
+                                }
+                            }
+                        }
+                }
+            @endphp
+
+            @if(!empty($variants['size']) || !empty($variants['color']))
+                <div class="mt-6 flex items-center gap-4">
+
+                <!-- {{-- Sizes --}} -->
+                @if(!empty($variants['size']))
+                    <div class="flex items-center gap-2">
+                    <h3 class="text-md font-semibold">Size:</h3>
+                    @foreach(array_unique($variants['size']) as $size)
+                        <span class="px-2 py-1 border rounded text-sm">
+                            {{ $size }}
+                        </span>
+                    @endforeach
+                    </div>
+                @endif
+
+                <!-- {{-- Colors --}} -->
+                @if(!empty($variants['color']))
+                    <div class="flex items-center gap-2">
+                    <h3 class="text-md font-semibold">Color:</h3>
+                    @foreach(array_unique($variants['color']) as $color)
+                        <span class="px-2 py-1 border rounded text-sm">
+                            {{ $color }}
+                        </span>
+                    @endforeach
+                    </div>
+                @endif
+
+            </div>
+            @endif
+
+           
 
             {{-- Ratings --}}
             <div class="mt-4 flex items-center gap-2">
