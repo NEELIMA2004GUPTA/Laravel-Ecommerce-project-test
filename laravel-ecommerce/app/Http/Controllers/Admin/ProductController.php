@@ -13,19 +13,19 @@ class ProductController extends Controller
     // ---------------------- INDEX ----------------------
     public function index(Request $request)
     {
-        $search = $request->search ;
+        $search = $request->search;
 
         $products = Product::with('category')
             ->when($search, function($query) use ($search) {
                 $query->where(function($q) use ($search) {
                     $q->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('slug', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%');
+                      ->orWhere('slug', 'like', '%' . $search . '%')
+                      ->orWhere('description', 'like', '%' . $search . '%');
                 });
             })
             ->latest()
             ->paginate(10)
-            ->appends($request->query()); 
+            ->appends($request->query());
 
         return view('admin.products.index', compact('products'));
     }
@@ -49,8 +49,8 @@ class ProductController extends Controller
             'sku' => 'required|string|unique:products,sku',
             'stock' => 'required|integer|min:0',
             'variants' => 'nullable|array',
-            'images' => 'nullable|array',   
-            'images.*' => 'mimes:jpeg,png,jpg,jfif,webp,,mp4,webm,ogg', 
+            'images' => 'nullable|array',
+            'images.*' => 'mimes:jpeg,png,jpg,jfif,webp,mp4,webm,ogg',
             'images.*' => [
                 function ($attribute, $value, $fail) {
                     $mime = $value->getMimeType();
@@ -60,7 +60,7 @@ class ProductController extends Controller
                         return $fail('Each image must be less than 5MB.');
                     }
 
-                    // Video Size Limit: 25MB (25 * 1024 * 1024 bytes)
+                    // Video Size Limit: 25MB
                     if (str_starts_with($mime, 'video/') && $value->getSize() > 25 * 1024 * 1024) {
                         return $fail('Each video must be less than 25MB.');
                     }
@@ -74,29 +74,22 @@ class ProductController extends Controller
         $imagePaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                // Check File Type
                 $mime = $file->getMimeType();
-
                 if (str_starts_with($mime, 'image/')) {
-                    // Save Images in products/images
                     $path = $file->store('products/images', 'public');
-                } 
-                elseif (str_starts_with($mime, 'video/')) {
-                    // Save Videos in products/videos
+                } elseif (str_starts_with($mime, 'video/')) {
                     $path = $file->store('products/videos', 'public');
-                } 
-                else {
-                    continue; // Skip unknown types (should not occur because of validation)
-            }
+                } else {
+                    continue;
+                }
                 $imagePaths[] = $path;
             }
         }
-        
-        $data['images'] = json_encode($imagePaths);
+        $data['images'] = $imagePaths;
 
-        //  Handle Variants
+        // Handle Variants
         if ($request->filled('variants')) {
-            $data['variants'] = json_encode($request->variants);
+            $data['variants'] = $request->variants;
         }
 
         Product::create($data);
@@ -117,12 +110,11 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
-    // update
+    // ---------------------- UPDATE ----------------------
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        // Validation (Images optional)
         $request->validate([
             'category_id' => 'required',
             'title' => 'required|string|max:255',
@@ -131,36 +123,24 @@ class ProductController extends Controller
             'discount' => 'nullable|numeric',
             'sku' => 'required|string',
             'stock' => 'required|integer',
-            'images.*' => 'nullable|mimes:jpeg,png,jpg,jfif,webp,webp,mp4,webm,ogg|max:4096',
+            'images.*' => 'nullable|mimes:jpeg,png,jpg,jfif,webp,mp4,webm,ogg|max:4096',
         ]);
 
-        // Update Base Fields
-        $product->update([
-            'category_id' => $request->category_id,
-            'title'       => $request->title,
-            'description' => $request->description,
-            'price'       => $request->price,
-            'discount'    => $request->discount,
-            'sku'         => $request->sku,
-            'stock'       => $request->stock,
-        ]);
+        $product->update($request->only([
+            'category_id', 'title', 'description', 'price', 'discount', 'sku', 'stock'
+        ]));
 
-        // Handle Remove Old Images
-        $existingImages = is_array($product->images) ? $product->images : json_decode($product->images, true);
-        $existingImages = $existingImages ?? [];
+        // Handle remove old images
+        $existingImages = $product->images ?? [];
 
         if ($request->has('remove_images')) {
             foreach ($request->remove_images as $imgToRemove) {
-                // Delete from storage
-                if (file_exists(storage_path('app/public/' . $imgToRemove))) {
-                    unlink(storage_path('app/public/' . $imgToRemove));
-                }
-                // Remove from array
+                Storage::disk('public')->delete($imgToRemove);
                 $existingImages = array_filter($existingImages, fn($img) => $img !== $imgToRemove);
             }
         }
 
-        // Handle Upload New Images
+        // Handle upload new images
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('products', 'public');
@@ -168,31 +148,22 @@ class ProductController extends Controller
             }
         }
 
-        // Save final image list
         $product->images = array_values($existingImages);
         $product->save();
 
-        return redirect()->route('admin.products.index')->with('success', 'Product Updated Successfully');
+        return redirect()->route('admin.products.index')->with('success', 'Product updated successfully!');
     }
 
     // ---------------------- DELETE PRODUCT ----------------------
     public function destroy(Product $product)
     {
-        if (!empty($product->images)) {
-
-        // Ensure images is always an array
-        $images = is_array($product->images)
-            ? $product->images
-            : json_decode($product->images, true);
-
-        if (is_array($images)) {
-            foreach ($images as $img) {
-                Storage::disk('public')->delete($img);
-            }
+        $images = $product->images ?? [];
+        foreach ($images as $img) {
+            Storage::disk('public')->delete($img);
         }
-    }
 
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', '🗑️ Product deleted!');
     }
 
@@ -201,12 +172,12 @@ class ProductController extends Controller
     {
         $request->validate(['image' => 'required|string']);
 
-        $images = json_decode($product->images ?? '[]', true);
+        $images = $product->images ?? [];
 
         if (($key = array_search($request->image, $images)) !== false) {
             Storage::disk('public')->delete($request->image);
             unset($images[$key]);
-            $product->images = json_encode(array_values($images));
+            $product->images = array_values($images);
             $product->save();
         }
 
