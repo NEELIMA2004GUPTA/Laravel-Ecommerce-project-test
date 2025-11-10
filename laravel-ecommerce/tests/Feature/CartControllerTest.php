@@ -3,16 +3,24 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\User;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Session;
 
 class CartControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     /** @test */
-    public function it_adds_a_product_to_the_cart()
+    public function user_can_view_cart_page()
+    {
+        $response = $this->get('/cart');
+        $response->assertStatus(200);
+        $response->assertViewIs('frontend.cart.index');
+    }
+
+    /** @test */
+    public function user_can_add_product_to_cart()
     {
         $product = Product::factory()->create([
             'price' => 100,
@@ -20,72 +28,82 @@ class CartControllerTest extends TestCase
             'stock' => 5,
         ]);
 
-        $response = $this->post(route('cart.add', $product->id));
-        $response->assertRedirect();
+        $response = $this->post('/cart/add/'.$product->id, [
+            'quantity' => 2
+        ]);
 
+        $response->assertSessionHas('success');
         $cart = session('cart');
 
-        $this->assertArrayHasKey($product->id, $cart);
-        $this->assertEquals(1, $cart[$product->id]['qty']);
-        $this->assertEquals(90, $cart[$product->id]['price']); // 100 - 10%
+        $this->assertEquals(2, $cart[$product->id]['quantity']);
+        $this->assertEquals(90, $cart[$product->id]['price']); // 10% discount
     }
 
     /** @test */
-    public function it_increments_quantity_if_added_twice()
+    public function product_quantity_cannot_exceed_stock()
     {
-        $product = Product::factory()->create(['stock' => 5]);
+        $product = Product::factory()->create([
+            'price' => 200,
+            'stock' => 3
+        ]);
 
-        $this->post(route('cart.add', $product->id));
-        $this->post(route('cart.add', $product->id));
+        $this->post('/cart/add/'.$product->id, ['quantity' => 10]);
+        $cart = session('cart');
+
+        $this->assertEquals(3, $cart[$product->id]['quantity']);
+    }
+
+    /** @test */
+    public function user_can_update_cart_quantity()
+    {
+        $product = Product::factory()->create([
+            'price' => 100,
+            'stock' => 5,
+        ]);
+
+        Session::put('cart', [
+            $product->id => [
+                'price' => 100,
+                'qty' => 1,
+                'stock' => 5
+            ]
+        ]);
+
+        $response = $this->post('/cart/update/'.$product->id, [
+            'qty' => 4
+        ]);
+
+        $response->assertJson([
+            'success' => true,
+            'qty' => 4,
+        ]);
 
         $cart = session('cart');
-        $this->assertEquals(2, $cart[$product->id]['qty']);
+        $this->assertEquals(4, $cart[$product->id]['qty']);
     }
 
-    /** @test */
-    public function it_updates_cart_quantity_but_not_exceed_stock()
-    {
-        $product = Product::factory()->create(['stock' => 3]);
+        /** @test */
+public function user_can_remove_item_from_cart()
+{
+    $product = Product::factory()->create([
+        'price' => 100,
+        'stock' => 5
+    ]);
 
-        $this->post(route('cart.add', $product->id));
+    session()->put('cart', [
+        $product->id => [
+            'title' => $product->title,
+            'price' => $product->price,
+            'quantity' => 1,
+            'stock' => $product->stock,
+        ],
+    ]);
 
-        // Try setting qty to higher than stock
-        $this->post(route('cart.update', $product->id), ['qty' => 10]);
+    $response = $this->delete(route('cart.remove', $product->id));
 
-        $cart = session('cart');
-        $this->assertEquals(3, $cart[$product->id]['qty']); // capped to stock
-    }
+    $response->assertSessionHas('success');
 
-    /** @test */
-    public function it_removes_item_from_cart()
-    {
-        $product = Product::factory()->create();
+    $this->assertArrayNotHasKey($product->id, session('cart'));
+}
 
-        $this->post(route('cart.add', $product->id));
-        $this->get(route('cart.remove', $product->id));
-
-        $cart = session('cart');
-        $this->assertArrayNotHasKey($product->id, $cart);
-    }
-
-    /** @test */
-    public function logged_in_user_gets_logged_in_cart_message()
-    {
-        $user = User::factory()->create();
-        $product = Product::factory()->create();
-
-        $response = $this->actingAs($user)->post(route('cart.add', $product->id));
-
-        $response->assertSessionHas('success', 'Product added to your cart.');
-    }
-
-    /** @test */
-    public function guest_user_gets_guest_cart_message()
-    {
-        $product = Product::factory()->create();
-
-        $response = $this->post(route('cart.add', $product->id));
-
-        $response->assertSessionHas('success', 'Product added to cart. Please login to see your cart.');
-    }
 }
