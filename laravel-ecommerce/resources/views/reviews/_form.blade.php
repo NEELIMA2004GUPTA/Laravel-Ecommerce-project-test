@@ -144,7 +144,6 @@ document.addEventListener('DOMContentLoaded', function () {
         allFiles.forEach(f=>dt.items.add(f));
         fileInput.files = dt.files;
 
-        fileInput.value='';
     }
 
     function renderPreviews(){
@@ -169,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Remove button
             const removeBtn = document.createElement('button');
             removeBtn.type='button';
-            removeBtn.textContent='×';
+            removeBtn.textContent='x';
             removeBtn.classList.add('absolute','top-0','right-0','bg-red-500','text-white','rounded-full','w-5','h-5','flex','items-center','justify-center','text-sm','cursor-pointer');
             removeBtn.addEventListener('click',()=>{
                 allFiles.splice(index,1);

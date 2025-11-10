@@ -63,7 +63,7 @@ class ProductReviewController extends BaseController
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $extension = $file->getClientOriginalExtension();
+                $extension = strtolower($file->getClientOriginalExtension());
                 $size = $file->getSize();
 
                 // Image Size Limit: 1MB

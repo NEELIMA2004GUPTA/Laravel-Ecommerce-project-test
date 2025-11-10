@@ -18,7 +18,7 @@ class Review extends Model
     }
 
     public function media(){
-        return $this->HasMany(ReviewMedia::class);
+        return $this->hasMany(ReviewMedia::class);
     }
 }
 

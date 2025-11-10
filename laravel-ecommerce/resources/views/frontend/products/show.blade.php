@@ -229,16 +229,15 @@
                         @endphp
 
                     @if($m->type === 'image')
-                
-                    {{-- IMAGE --}}
-                    <img src="{{ $url }}" class="w-24 h-24 object-cover rounded-md shadow">
+                        {{-- IMAGE --}}
+                        <img src="{{ asset('storage/'.$m->path) }}" class="w-24 h-24 object-cover rounded-md shadow">
 
                     @elseif($m->type === 'video')
                 
-                    {{-- VIDEO (Both pre-recorded & user-recorded) --}}
-                    <video controls class="w-28 h-20 rounded-md shadow bg-black">
-                        <source src="{{ $url }}" type="{{ $m->mime }}">
-                    </video>
+                        {{-- VIDEO (Both pre-recorded & user-recorded) --}}
+                        <video controls class="w-28 h-20 rounded-md shadow bg-black">
+                            <source src="{{ $url }}" type="{{ $m->mime }}">
+                        </video>
 
                 @endif
             @endforeach

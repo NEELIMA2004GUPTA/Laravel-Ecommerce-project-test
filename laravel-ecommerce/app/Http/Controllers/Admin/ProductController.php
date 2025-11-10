@@ -55,9 +55,9 @@ class ProductController extends Controller
                 function ($attribute, $value, $fail) {
                     $mime = $value->getMimeType();
 
-                    // Image Size Limit: 1MB (1024 KB)
-                    if (str_starts_with($mime, 'image/') && $value->getSize() > 1024 * 1024) {
-                        return $fail('Each image must be less than 1MB.');
+                    // Image Size Limit: 5MB 
+                    if (str_starts_with($mime, 'image/') && $value->getSize() > 5 * 1024 * 1024) {
+                        return $fail('Each image must be less than 5MB.');
                     }
 
                     // Video Size Limit: 25MB (25 * 1024 * 1024 bytes)
