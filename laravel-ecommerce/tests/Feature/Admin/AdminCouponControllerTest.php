@@ -9,7 +9,7 @@ use Tests\TestCase;
 use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 
-class CouponControllerTest extends TestCase
+class AdminCouponControllerTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -157,7 +157,7 @@ class CouponControllerTest extends TestCase
             ]
         ]);
 
-        $response = $this->post(route('admin.coupons.applyCoupon'), [
+        $response = $this->post(route('apply.coupon'), [
             'coupon_code' => 'SAVE10'
         ]);
 
@@ -170,7 +170,7 @@ class CouponControllerTest extends TestCase
         $admin = $this->adminUser();
         $this->actingAs($admin);
 
-        $response = $this->post(route('admin.coupons.applyCoupon'), [
+        $response = $this->post(route('apply.coupon'), [
             'coupon_code' => 'INVALID'
         ]);
 
@@ -189,7 +189,7 @@ class CouponControllerTest extends TestCase
             'cart' => [['price' => 100, 'qty' => 1]]
         ]);
 
-        $response = $this->post(route('admin.coupons.applyCoupon'), ['coupon_code' => $coupon->code]);
+        $response = $this->post(route('apply.coupon'), ['coupon_code' => $coupon->code]);
         $response->assertSessionHas('error');
     }
 
@@ -201,15 +201,17 @@ class CouponControllerTest extends TestCase
 
         $coupon = Coupon::factory()->create([
             'expires_at' => now()->subDays(1),
-            'status' => 1
+            'status' => 1,
+            'min_amount' => 100,
         ]);
 
         $this->withSession([
             'cart' => [['price' => 100, 'qty' => 1]]
         ]);
 
-        $response = $this->post(route('admin.coupons.applyCoupon'), ['coupon_code' => $coupon->code]);
+        $response = $this->post(route('apply.coupon'), ['coupon_code' => $coupon->code]);
         $response->assertSessionHas('error', 'This coupon has expired.');
+
     }
 
     #[Test]
@@ -220,7 +222,7 @@ class CouponControllerTest extends TestCase
 
         $this->withSession(['coupon' => ['code' => 'TEST']]);
 
-        $response = $this->post(route('admin.coupons.removeCoupon'));
+        $response = $this->get(route('remove.coupon'));
         $response->assertSessionMissing('coupon');
     }
 }

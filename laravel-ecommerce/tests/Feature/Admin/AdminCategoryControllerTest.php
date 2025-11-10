@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class CategoryControllerTest extends TestCase
+class AdminCategoryControllerTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -169,7 +169,7 @@ class CategoryControllerTest extends TestCase
         $child1 = Category::factory()->create(['parent_id' => $parent->id]);
         $child2 = Category::factory()->create(['parent_id' => $parent->id]);
 
-        $response = $this->get(route('admin.categories.getSubcategories', $parent));
+        $response = $this->get(route('admin.categories.subcategories', $parent));
         $response->assertStatus(200);
         $response->assertJsonCount(2);
         $response->assertJsonFragment(['id' => $child1->id, 'name' => $child1->name]);

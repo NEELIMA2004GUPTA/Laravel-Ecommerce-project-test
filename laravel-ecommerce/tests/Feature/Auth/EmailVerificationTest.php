@@ -3,11 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Tests\TestCase;
-use Illuminate\Support\Facades\URL;
 use PHPUnit\Framework\Attributes\Test;
 
 class EmailVerificationTest extends TestCase
@@ -15,22 +14,21 @@ class EmailVerificationTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function email_verification_screen_can_be_rendered()
+    public function it_redirects_if_email_already_verified()
     {
         $user = User::factory()->create([
-            'email_verified_at' => null,
+            'email_verified_at' => now(),
         ]);
 
         $this->actingAs($user);
 
-        $response = $this->get('/verify-email');
+        $response = $this->post(route('verification.send'));
 
-        $response->assertStatus(200);
-        $response->assertSee('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.');
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     #[Test]
-    public function a_user_can_request_new_verification_email()
+    public function it_sends_verification_if_email_not_verified()
     {
         Notification::fake();
 
@@ -40,16 +38,29 @@ class EmailVerificationTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->post('/email/verification-notification');
-
-        Notification::assertSentTo($user, VerifyEmail::class);
+        $response = $this->post(route('verification.send'));
 
         $response->assertRedirect();
         $response->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     #[Test]
-    public function email_can_be_verified()
+    public function prompt_redirects_if_email_already_verified()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('verification.notice'));
+        $response->assertRedirect(route('dashboard'));
+    }
+
+    #[Test]
+    public function prompt_shows_view_if_email_not_verified()
     {
         $user = User::factory()->create([
             'email_verified_at' => null,
@@ -57,19 +68,73 @@ class EmailVerificationTest extends TestCase
 
         $this->actingAs($user);
 
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            [
-                'id' => $user->id,
-                'hash' => sha1($user->email),
-            ]
-        );
-
-        $response = $this->get($verificationUrl);
-
-        $response->assertRedirect('/dashboard?verified=1');
-        $this->assertNotNull($user->fresh()->email_verified_at);
+        $response = $this->get(route('verification.notice'));
+        $response->assertStatus(200);
+        $response->assertViewIs('auth.verify-email');
     }
-}
 
+    #[Test]
+    public function notification_invoke_redirects_if_email_verified()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post(route('verification.send'));
+        $response->assertRedirect(route('dashboard'));
+    }
+
+    #[Test]
+    public function notification_invoke_sends_email_if_not_verified()
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post(route('verification.send'));
+
+        $response->assertRedirect();
+        $response->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    #[Test]
+    public function notification_store_redirects_if_email_verified()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post(route('verification.send'));
+        $response->assertRedirect(route('dashboard'));
+    }
+
+    #[Test]
+    public function notification_store_sends_email_if_not_verified()
+    {
+        Notification::fake();
+
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->post(route('verification.send'));
+
+        $response->assertRedirect();
+        $response->assertSessionHas('status', 'verification-link-sent');
+
+        Notification::assertSentTo($user, VerifyEmail::class);
+    }
+    
+}

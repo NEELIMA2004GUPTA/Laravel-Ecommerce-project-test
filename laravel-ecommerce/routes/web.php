@@ -24,9 +24,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
-// });
 
 Route::get('/verify-email', EmailVerificationPromptController::class)
     ->middleware('auth')
