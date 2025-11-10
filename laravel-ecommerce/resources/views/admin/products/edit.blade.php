@@ -1,17 +1,4 @@
 <x-app-layout>
-@php
-    if (!function_exists('isImageFile')) {
-        function isImageFile($file) {
-            return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
-        }
-    }
-
-    if (!function_exists('isVideoFile')) {
-        function isVideoFile($file) {
-            return preg_match('/\.(mp4|webm|ogg)$/i', $file);
-        }
-    }
-@endphp
 <div class="max-w-3xl mx-auto bg-white shadow p-6 rounded">
     @if ($errors->any())
         <div class="bg-red-100 text-red-700 p-2 rounded mb-4">

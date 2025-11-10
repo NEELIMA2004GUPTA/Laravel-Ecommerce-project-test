@@ -85,25 +85,35 @@ class CartControllerTest extends TestCase
         /** @test */
 public function user_can_remove_item_from_cart()
 {
-    $product = Product::factory()->create([
+    // Arrange
+    $user = \App\Models\User::factory()->create();
+    $product = \App\Models\Product::factory()->create([
+        'stock' => 10,
         'price' => 100,
-        'stock' => 5
+        'discount' => 0,
     ]);
 
-    session()->put('cart', [
-        $product->id => [
-            'title' => $product->title,
-            'price' => $product->price,
-            'quantity' => 1,
-            'stock' => $product->stock,
-        ],
+    // Simulate a cart in session
+    $this->actingAs($user)->withSession([
+        'cart' => [
+            $product->id => [
+                'title' => $product->title,
+                'original_price' => $product->price,
+                'price' => $product->price,
+                'discount' => 0,
+                'quantity' => 1,
+                'stock' => $product->stock,
+            ]
+        ]
     ]);
 
-    $response = $this->delete(route('cart.remove', $product->id));
+    // Act
+   $response = $this->get(route('cart.remove', $product));
 
-    $response->assertSessionHas('success');
-
-    $this->assertArrayNotHasKey($product->id, session('cart'));
+    // Assert
+    $response->assertRedirect();              
+    $response->assertSessionHas('success');   
+    $this->assertArrayNotHasKey($product->id, session('cart')); 
 }
 
 }

@@ -1,12 +1,4 @@
 <x-app-layout>
-@php
-    function isImageFile($file) {
-        return preg_match('/\.(jpg|jpeg|png|webp|jfif)$/i', $file);
-    }
-    function isVideoFile($file) {
-        return preg_match('/\.(mp4|webm|ogg)$/i', $file);
-    }
-@endphp
     
 <div class="max-w-7xl mx-auto py-10 px-4" x-data="{ openFilters: false }">
 
