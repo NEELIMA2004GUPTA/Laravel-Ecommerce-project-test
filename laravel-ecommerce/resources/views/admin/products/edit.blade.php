@@ -74,6 +74,7 @@
                     <img src="{{ asset('storage/' . $image) }}" 
                      width="100" height="100"
                      style="object-fit:cover; border-radius:6px;">
+
                 @elseif(isVideoFile($image))
                     <video src="{{ asset('storage/' . $image) }}" 
                         class="w-28 h-20 object-cover rounded"
@@ -96,8 +97,8 @@
             @endforeach
         </div>
 
-        <label class="font-semibold">Add More Images</label>
-        <input type="file" name="images[]" multiple accept="image/*,video/*" class="w-full border p-2 mb-4 form-control">
+        <label class="font-semibold">Add More Images and Videos</label>
+        <input type="file" name="images[]" multiple accept="image/*,video/mp4,video/webm,video/ogg" class="w-full border p-2 mb-4 form-control">
 
         <button class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
     </form>

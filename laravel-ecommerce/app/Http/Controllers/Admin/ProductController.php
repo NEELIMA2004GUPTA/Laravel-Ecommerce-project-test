@@ -131,7 +131,7 @@ class ProductController extends Controller
             'discount' => 'nullable|numeric',
             'sku' => 'required|string',
             'stock' => 'required|integer',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,jfif,webp|max:4096',
+            'images.*' => 'nullable|mimes:jpeg,png,jpg,jfif,webp,webp,mp4,webm,ogg|max:4096',
         ]);
 
         // Update Base Fields
