@@ -6,12 +6,13 @@ use Tests\TestCase;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Session;
+use PHPUnit\Framework\Attributes\Test;
 
 class CartControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function user_can_view_cart_page()
     {
         $response = $this->get('/cart');
@@ -19,7 +20,7 @@ class CartControllerTest extends TestCase
         $response->assertViewIs('frontend.cart.index');
     }
 
-    /** @test */
+    #[Test]
     public function user_can_add_product_to_cart()
     {
         $product = Product::factory()->create([
@@ -39,7 +40,7 @@ class CartControllerTest extends TestCase
         $this->assertEquals(90, $cart[$product->id]['price']); // 10% discount
     }
 
-    /** @test */
+    #[Test]
     public function product_quantity_cannot_exceed_stock()
     {
         $product = Product::factory()->create([
@@ -53,7 +54,7 @@ class CartControllerTest extends TestCase
         $this->assertEquals(3, $cart[$product->id]['quantity']);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_update_cart_quantity()
     {
         $product = Product::factory()->create([
@@ -82,7 +83,7 @@ class CartControllerTest extends TestCase
         $this->assertEquals(4, $cart[$product->id]['qty']);
     }
 
-        /** @test */
+    #[Test]
 public function user_can_remove_item_from_cart()
 {
     // Arrange

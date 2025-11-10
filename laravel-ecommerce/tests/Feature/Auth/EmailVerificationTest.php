@@ -8,12 +8,13 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Tests\TestCase;
 use Illuminate\Support\Facades\URL;
+use PHPUnit\Framework\Attributes\Test;
 
 class EmailVerificationTest extends TestCase
 {
     use RefreshDatabase;
 
-     /** @test */
+    #[Test]
     public function email_verification_screen_can_be_rendered()
     {
         $user = User::factory()->create([
@@ -28,7 +29,7 @@ class EmailVerificationTest extends TestCase
         $response->assertSee('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.');
     }
 
-    /** @test */
+    #[Test]
     public function a_user_can_request_new_verification_email()
     {
         Notification::fake();
@@ -47,7 +48,7 @@ class EmailVerificationTest extends TestCase
         $response->assertSessionHas('status', 'verification-link-sent');
     }
 
-    /** @test */
+    #[Test]
     public function email_can_be_verified()
     {
         $user = User::factory()->create([

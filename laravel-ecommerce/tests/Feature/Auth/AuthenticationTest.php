@@ -5,19 +5,20 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function register_page_loads_successfully()
     {
         $response = $this->get('/register');
         $response->assertStatus(200);
     }
 
-     /** @test */
+    #[Test]
     public function user_can_register()
     {
         $response = $this->post('/register', [
@@ -33,14 +34,14 @@ class AuthenticationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function login_page_loads_successfully()
     {
         $response = $this->get('/login');
         $response->assertStatus(200);
     }
 
-     /** @test */
+    #[Test]
     public function user_can_login_with_valid_credentials()
     {
         $user = User::factory()->create([
@@ -56,7 +57,7 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_login_with_invalid_password()
     {
         $user = User::factory()->create([
@@ -72,7 +73,7 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
+    #[Test]
     public function user_can_logout()
     {
         $user = User::factory()->create();
@@ -84,7 +85,7 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
+    #[Test]
     public function admin_login_page_loads_successfully()
     {
         $response = $this->get('/login');
@@ -93,7 +94,7 @@ class AuthenticationTest extends TestCase
         
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_login_with_valid_credentials()
     {
         $admin = User::factory()->create([
@@ -110,7 +111,7 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($admin);
     }
 
-    /** @test */
+    #[Test]
     public function admin_cannot_login_with_invalid_password()
     {
         $admin = User::factory()->create([
@@ -127,7 +128,7 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
+    #[Test]
     public function normal_customer_cannot_access_admin_dashboard()
     {
         $customer = User::factory()->create([
@@ -142,7 +143,7 @@ class AuthenticationTest extends TestCase
         $response->assertStatus(403); 
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_logout()
     {
         $admin = User::factory()->create([

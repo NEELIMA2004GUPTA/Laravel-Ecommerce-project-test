@@ -6,12 +6,13 @@ use Tests\TestCase;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class FrontProductControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]    
     public function products_page_loads_successfully()
     {
         $response = $this->get('/products');
@@ -19,7 +20,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertViewIs('frontend.products.index');
     }
 
-    /** @test */
+    #[Test]    
     public function it_can_search_products_by_title()
     {
         Product::factory()->create(['title' => 'Red Shoes']);
@@ -30,7 +31,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertDontSee('Blue Shirt');
     }
 
-    /** @test */
+    #[Test]    
     public function it_can_filter_by_category()
     {
         $category = Category::factory()->create();
@@ -47,7 +48,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertDontSee($otherProduct->title);
     }
 
-    /** @test */
+    #[Test]    
     public function it_can_filter_by_subcategory()
     {
         $subcategory = Category::factory()->create();
@@ -60,7 +61,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertDontSee($otherProduct->title);
     }
 
-    /** @test */
+    #[Test]    
     public function it_can_filter_products_by_price_range()
     {
         $cheap = Product::factory()->create(['price' => 100]);
@@ -74,7 +75,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertDontSee($expensive->title);
     }
 
-    /** @test */
+    #[Test]    
     public function it_sorts_products_by_newest()
     {
         $oldProduct = Product::factory()->create(['created_at' => now()->subDays(5)]);
@@ -85,7 +86,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertSeeInOrder([$newProduct->title, $oldProduct->title]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sorts_products_by_oldest()
     {
         $oldProduct = Product::factory()->create(['created_at' => now()->subDays(5)]);
@@ -96,7 +97,7 @@ class FrontProductControllerTest extends TestCase
         $response->assertSeeInOrder([$oldProduct->title, $newProduct->title]);
     }
 
-/** @test */
+#[Test]
 public function product_detail_page_loads()
 {
     

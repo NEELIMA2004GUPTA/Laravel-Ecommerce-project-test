@@ -6,10 +6,12 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+
 class PasswordConfirmationTest extends TestCase
 {
     use RefreshDatabase;
 
+    
     public function test_confirm_password_screen_can_be_rendered(): void
     {
         $user = User::factory()->create();
@@ -19,6 +21,7 @@ class PasswordConfirmationTest extends TestCase
         $response->assertStatus(200);
     }
 
+    
     public function test_password_can_be_confirmed(): void
     {
         $user = User::factory()->create();
@@ -31,6 +34,7 @@ class PasswordConfirmationTest extends TestCase
         $response->assertSessionHasNoErrors();
     }
 
+   
     public function password_is_not_confirmed_with_invalid_password()
     {
         $user = \App\Models\User::factory()->create([

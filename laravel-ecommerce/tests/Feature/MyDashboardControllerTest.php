@@ -6,19 +6,20 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class MyDashboardControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]    
     public function it_redirects_guests_from_dashboard()
     {
         $response = $this->get('/dashboard');
         $response->assertRedirect('/login');
     }
 
-    /** @test */
+    #[Test]    
     public function authenticated_user_can_see_dashboard_with_correct_order_counts()
     {
         $user = User::factory()->create();

@@ -7,12 +7,13 @@ use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AdminAccessAndNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function non_admin_users_cannot_access_admin_routes()
     {
         $user = User::factory()->create(['role' => 'customer']);
@@ -23,7 +24,7 @@ class AdminAccessAndNotificationTest extends TestCase
         $response->assertStatus(403); // Because admin middleware should block
     }
 
-    /** @test */
+    #[Test]
     public function admin_user_can_access_admin_dashboard()
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -34,7 +35,7 @@ class AdminAccessAndNotificationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function notification_is_created_when_new_order_is_placed()
     {
         Notification::fake();
@@ -56,7 +57,7 @@ class AdminAccessAndNotificationTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_view_notifications_and_they_get_marked_as_read()
     {
         $admin = User::factory()->create(['role' => 'admin']);

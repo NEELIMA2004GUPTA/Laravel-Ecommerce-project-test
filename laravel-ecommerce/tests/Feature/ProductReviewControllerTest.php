@@ -9,12 +9,13 @@ use App\Models\Review;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Test;
 
 class ProductReviewControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]    
     public function guest_cannot_submit_review()
     {
         $product = Product::factory()->create();
@@ -23,7 +24,7 @@ class ProductReviewControllerTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    /** @test */
+    #[Test]    
     public function authenticated_user_can_submit_review_without_media()
     {
         $this->actingAs($user = User::factory()->create());
@@ -45,7 +46,7 @@ class ProductReviewControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]    
     public function user_can_upload_images_and_video_with_review()
     {
         Storage::fake('public');
@@ -77,7 +78,7 @@ class ProductReviewControllerTest extends TestCase
         $this->assertCount(3, $review->media);
     }
 
-    /** @test */
+    #[Test]    
     public function rating_is_required()
     {
         $this->actingAs(User::factory()->create());

@@ -10,12 +10,13 @@ use App\Models\OrderItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\NewOrderNotification;
+use PHPUnit\Framework\Attributes\Test;
 
 class CheckoutControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function user_is_redirected_if_cart_is_empty_on_checkout()
     {
         $user = User::factory()->create();
@@ -26,7 +27,7 @@ class CheckoutControllerTest extends TestCase
             ->assertSessionHas('error', 'Your cart is empty.');
     }
 
-    /** @test */
+    #[Test]
     public function order_is_created_successfully()
     {
         Notification::fake();
@@ -81,7 +82,7 @@ class CheckoutControllerTest extends TestCase
         $this->assertEmpty(session('cart'));
     }
 
-    /** @test */
+    #[Test]
     public function user_can_cancel_own_pending_order()
     {
         $user = User::factory()->create();
@@ -98,7 +99,7 @@ class CheckoutControllerTest extends TestCase
         $this->assertEquals(7, $product->fresh()->stock); // stock returned
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_cancel_completed_or_cancelled_order()
     {
         $user = User::factory()->create();
@@ -109,7 +110,7 @@ class CheckoutControllerTest extends TestCase
             ->assertSessionHas('error', 'This order cannot be cancelled.');
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_cancel_someone_elses_order()
     {
         $user = User::factory()->create();

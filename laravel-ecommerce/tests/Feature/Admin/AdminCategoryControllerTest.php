@@ -2,98 +2,177 @@
 
 namespace Tests\Feature\Admin;
 
-use Tests\TestCase;
 use App\Models\User;
 use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
-class AdminCategoryControllerTest extends TestCase
+class CategoryControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function actingAsAdmin()
+    private function adminUser()
     {
-        $admin = User::factory()->create(['role' => 'admin']);
-        return $this->actingAs($admin);
+        return User::factory()->create(['role' => 'admin']);
     }
 
-    /** @test */
-    public function it_displays_category_list()
+    #[Test]
+    public function index_displays_categories_and_search()
     {
-        $this->actingAsAdmin();
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
 
-        Category::factory()->count(3)->create();
+        $parent = Category::factory()->create(['name' => 'Parent Category']);
+        $child = Category::factory()->create(['name' => 'Child Category', 'parent_id' => $parent->id]);
 
+        // Test index without search
         $response = $this->get(route('admin.categories.index'));
-
         $response->assertStatus(200);
-        $response->assertViewIs('admin.categories.index');
         $response->assertViewHas('categories');
+
+        // Test index with search
+        $response = $this->get(route('admin.categories.index', ['search' => 'Parent']));
+        $response->assertStatus(200);
+        $response->assertViewHas('categories', function($categories) use ($parent) {
+            return $categories->contains($parent);
+        });
     }
 
-    /** @test */
-    public function it_can_create_a_category()
+    #[Test]
+    public function create_displays_form_with_parents()
     {
-        $this->actingAsAdmin();
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
 
-        $data = ['name' => 'Electronics'];
+        $parent = Category::factory()->create();
 
-        $response = $this->post(route('admin.categories.store'), $data);
-
-        $response->assertRedirect(route('admin.categories.index'));
-        $this->assertDatabaseHas('categories', $data);
+        $response = $this->get(route('admin.categories.create'));
+        $response->assertStatus(200);
+        $response->assertViewHas('parents');
     }
 
-    /** @test */
-    public function it_can_update_a_category()
+    #[Test]
+    public function store_creates_category_and_redirects()
     {
-        $this->actingAsAdmin();
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
 
-        $category = Category::factory()->create(['name' => 'Old Name']);
+        $parent = Category::factory()->create();
 
-        $response = $this->put(route('admin.categories.update', $category), [
-            'name' => 'New Name',
-            'parent_id' => null
+        $response = $this->post(route('admin.categories.store'), [
+            'name' => 'New Category',
+            'parent_id' => $parent->id,
         ]);
 
         $response->assertRedirect(route('admin.categories.index'));
-        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'New Name']);
+        $this->assertDatabaseHas('categories', ['name' => 'New Category', 'parent_id' => $parent->id]);
     }
 
-    /** @test */
-    public function it_can_delete_a_category()
+    #[Test]
+    public function store_validation_fails_with_invalid_data()
     {
-        $this->actingAsAdmin();
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
+        $response = $this->post(route('admin.categories.store'), [
+            'name' => '', // required
+            'parent_id' => 9999, // non-existing
+        ]);
+
+        $response->assertSessionHasErrors(['name', 'parent_id']);
+    }
+
+    #[Test]
+    public function show_displays_category_with_subcategories()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
+        $parent = Category::factory()->create();
+        $child = Category::factory()->create(['parent_id' => $parent->id]);
+
+        $response = $this->get(route('admin.categories.show', $parent));
+        $response->assertStatus(200);
+        $response->assertViewHas('category', function($category) use ($parent) {
+            return $category->id === $parent->id && $category->subcategories->contains(function($sub){ return true; });
+        });
+    }
+
+    #[Test]
+    public function edit_displays_category_and_parents()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
+        $category = Category::factory()->create();
+
+        $response = $this->get(route('admin.categories.edit', $category));
+        $response->assertStatus(200);
+        $response->assertViewHasAll(['category', 'parents']);
+    }
+
+    #[Test]
+    public function update_edits_category_and_redirects()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
+        $category = Category::factory()->create();
+        $parent = Category::factory()->create();
+
+        $response = $this->put(route('admin.categories.update', $category), [
+            'name' => 'Updated Name',
+            'parent_id' => $parent->id,
+        ]);
+
+        $response->assertRedirect(route('admin.categories.index'));
+        $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'Updated Name', 'parent_id' => $parent->id]);
+    }
+
+    #[Test]
+    public function update_validation_fails_with_invalid_data()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
+
+        $category = Category::factory()->create();
+
+        $response = $this->put(route('admin.categories.update', $category), [
+            'name' => '', // required
+            'parent_id' => 9999, // non-existing
+        ]);
+
+        $response->assertSessionHasErrors(['name', 'parent_id']);
+    }
+
+    #[Test]
+    public function destroy_deletes_category()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
 
         $category = Category::factory()->create();
 
         $response = $this->delete(route('admin.categories.destroy', $category));
-
         $response->assertRedirect(route('admin.categories.index'));
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
     }
 
-    /** @test */
-    public function test_it_returns_subcategories_as_json()
-{
-    // Create admin
-    $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+    #[Test]
+    public function get_subcategories_returns_json()
+    {
+        $admin = $this->adminUser();
+        $this->actingAs($admin);
 
-    // Create parent category
-    $parent = \App\Models\Category::factory()->create();
+        $parent = Category::factory()->create();
+        $child1 = Category::factory()->create(['parent_id' => $parent->id]);
+        $child2 = Category::factory()->create(['parent_id' => $parent->id]);
 
-    // Create child subcategories
-    $sub1 = \App\Models\Category::factory()->create(['parent_id' => $parent->id]);
-    $sub2 = \App\Models\Category::factory()->create(['parent_id' => $parent->id]);
-
-    // ACT as admin to avoid redirect login issue
-    $response = $this->actingAs($admin)->getJson(
-        route('admin.categories.subcategories', $parent->id)
-    );
-
-    $response->assertStatus(200)
-             ->assertJsonCount(2) // expecting 2 subcategories
-             ->assertJsonFragment(['id' => $sub1->id])
-             ->assertJsonFragment(['id' => $sub2->id]);
-}
+        $response = $this->get(route('admin.categories.getSubcategories', $parent));
+        $response->assertStatus(200);
+        $response->assertJsonCount(2);
+        $response->assertJsonFragment(['id' => $child1->id, 'name' => $child1->name]);
+        $response->assertJsonFragment(['id' => $child2->id, 'name' => $child2->name]);
+    }
 }

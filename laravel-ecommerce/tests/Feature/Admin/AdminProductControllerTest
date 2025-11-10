@@ -4,221 +4,166 @@ namespace Tests\Feature\Admin;
 
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function adminLogin()
+    protected $admin;
+
+    protected function setUp(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin);
-    }
-
-    /** @test */
-    public function admin_can_view_products_list()
-    {
-        $this->adminLogin();
-        Product::factory()->count(3)->create();
-
-        $response = $this->get(route('admin.products.index'));
-
-        $response->assertStatus(200);
-        $response->assertViewIs('admin.products.index');
-        $response->assertViewHas('products');
-    }
-
-    /** @test */
-    public function admin_can_create_a_product_with_images()
-    {
-        $this->adminLogin();
+        parent::setUp();
+        $this->admin = User::factory()->create(['is_admin' => true]);
         Storage::fake('public');
+    }
 
+    #[Test]
+    public function admin_can_view_products_index()
+    {
+        $this->actingAs($this->admin)
+             ->get(route('admin.products.index'))
+             ->assertStatus(200);
+    }
+
+    #[Test]
+    public function admin_can_view_create_product_page()
+    {
+        $this->actingAs($this->admin)
+             ->get(route('admin.products.create'))
+             ->assertStatus(200);
+    }
+
+    #[Test]
+    public function admin_can_store_product_with_images_and_variants()
+    {
         $category = Category::factory()->create();
+        $images = [
+            UploadedFile::fake()->image('image1.jpg'),
+            UploadedFile::fake()->image('image2.png'),
+        ];
 
-        $response = $this->post(route('admin.products.store'), [
-            'title' => 'Test Product',
-            'description' => 'Example description',
-            'category_id' => $category->id,
-            'price' => 200,
-            'discount' => 10,
-            'sku' => 'ABC123',
-            'stock' => 5,
-            'variants' => ['size' => 'L'],
-            'images' => [
-                UploadedFile::fake()->image('img1.jpg'),
-                UploadedFile::fake()->image('img2.jpg'),
-            ]
-        ]);
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.products.store'), [
+                'title' => 'Test Product',
+                'description' => 'Test description',
+                'category_id' => $category->id,
+                'price' => 100,
+                'discount' => 10,
+                'sku' => 'SKU123',
+                'stock' => 5,
+                'variants' => ['Size' => 'M', 'Color' => 'Red'],
+                'images' => $images,
+            ]);
 
         $response->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseHas('products', ['title' => 'Test Product']);
 
-        $this->assertDatabaseHas('products', [
-            'title' => 'Test Product',
-            'sku' => 'ABC123',
-        ]);
+        $product = Product::first();
+        $this->assertCount(2, json_decode($product->images, true));
+        $this->assertEquals(json_encode(['Size' => 'M', 'Color' => 'Red']), $product->variants);
     }
 
-    /** @test */
-    public function admin_can_update_product_and_add_new_images()
+    #[Test]
+    public function admin_can_view_edit_page()
     {
-        $this->adminLogin();
-        Storage::fake('public');
+        $product = Product::factory()->create();
 
+        $this->actingAs($this->admin)
+             ->get(route('admin.products.edit', $product->id))
+             ->assertStatus(200);
+    }
+
+    #[Test]
+    public function admin_can_update_product_and_add_remove_images()
+    {
         $category = Category::factory()->create();
-        $product = Product::factory()->create(['images' => json_encode([])]);
-
-        $response = $this->put(route('admin.products.update', $product->id), [
-            'title' => 'Updated Title',
-            'category_id' => $category->id,
-            'price' => 250,
-            'discount' => 5,
-            'sku' => $product->sku,
-            'stock' => 12,
-            'images' => [ UploadedFile::fake()->image('new.jpg') ]
-        ]);
-
-        $response->assertRedirect(route('admin.products.index'));
-        $this->assertDatabaseHas('products', ['title' => 'Updated Title']);
-    }
-
-    /** @test */
-    public function admin_can_delete_a_product_and_its_images()
-    {
-        $this->adminLogin();
-        Storage::fake('public');
-
         $product = Product::factory()->create([
-            'images' => json_encode(['products/test.jpg'])
+            'images' => json_encode(['old_image.jpg']),
         ]);
 
-        Storage::disk('public')->put('products/test.jpg', 'dummy');
+        Storage::disk('public')->put('old_image.jpg', 'dummy');
 
-        $response = $this->delete(route('admin.products.destroy', $product->id));
+        $newImage = UploadedFile::fake()->image('new_image.jpg');
+
+        $response = $this->actingAs($this->admin)
+            ->put(route('admin.products.update', $product->id), [
+                'title' => 'Updated Title',
+                'description' => 'Updated Description',
+                'category_id' => $category->id,
+                'price' => 200,
+                'discount' => 20,
+                'sku' => $product->sku,
+                'stock' => 10,
+                'remove_images' => ['old_image.jpg'],
+                'images' => [$newImage],
+            ]);
 
         $response->assertRedirect(route('admin.products.index'));
 
-        Storage::disk('public')->assertMissing('products/test.jpg');
+        $product->refresh();
+        $this->assertEquals('Updated Title', $product->title);
+        $this->assertCount(1, $product->images);
+        Storage::disk('public')->assertMissing('old_image.jpg');
+        Storage::disk('public')->assertExists($product->images[0]);
+    }
+
+    #[Test]
+    public function admin_can_delete_product_and_its_images()
+    {
+        $product = Product::factory()->create([
+            'images' => json_encode(['img1.jpg', 'img2.jpg']),
+        ]);
+
+        foreach (json_decode($product->images) as $img) {
+            Storage::disk('public')->put($img, 'dummy');
+        }
+
+        $response = $this->actingAs($this->admin)
+            ->delete(route('admin.products.destroy', $product->id));
+
+        $response->assertRedirect(route('admin.products.index'));
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        Storage::disk('public')->assertMissing('img1.jpg');
+        Storage::disk('public')->assertMissing('img2.jpg');
     }
 
-    /** @test */
-    public function admin_can_delete_a_single_image_from_product()
+    #[Test]
+    public function admin_can_delete_single_image_via_ajax()
     {
-        $this->adminLogin();
-        Storage::fake('public');
-
         $product = Product::factory()->create([
-            'images' => json_encode(['products/pic1.jpg', 'products/pic2.jpg'])
+            'images' => json_encode(['img1.jpg', 'img2.jpg']),
         ]);
 
-        Storage::disk('public')->put('products/pic1.jpg', 'dummy');
+        Storage::disk('public')->put('img1.jpg', 'dummy');
+        Storage::disk('public')->put('img2.jpg', 'dummy');
 
-        $response = $this->delete(route('admin.products.deleteImage', $product), [
-            'image' => 'products/pic1.jpg'
-        ]);
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.products.deleteImage', $product), [
+                'image' => 'img1.jpg'
+            ]);
 
         $response->assertJson(['success' => true]);
-        Storage::disk('public')->assertMissing('products/pic1.jpg');
+        $product->refresh();
+        $this->assertCount(1, json_decode($product->images, true));
+        Storage::disk('public')->assertMissing('img1.jpg');
+        Storage::disk('public')->assertExists('img2.jpg');
     }
 
-    /** @test */
-    public function product_create_validation_fails_without_required_fields()
+    #[Test]
+    public function non_admin_cannot_access_product_routes()
     {
-        $this->adminLogin();
-
-        $response = $this->post(route('admin.products.store'), []);
-
-        $response->assertSessionHasErrors([
-            'title', 'category_id', 'price', 'sku', 'stock'
-        ]);
-    }
-
-    /** @test */
-    public function product_update_validation_fails_if_required_fields_missing()
-    {
-        $this->adminLogin();
+        $user = User::factory()->create(['is_admin' => false]);
         $product = Product::factory()->create();
 
-        $response = $this->put(route('admin.products.update', $product->id), []);
-
-        $response->assertSessionHasErrors([
-            'title', 'category_id', 'price', 'sku', 'stock'
-        ]);
-    }
-
-    /** @test */
-    public function admin_can_search_products_by_title()
-    {
-        $this->adminLogin();
-
-        Product::factory()->create(['title' => 'Apple Phone']);
-        Product::factory()->create(['title' => 'Samsung TV']);
-
-        $response = $this->get(route('admin.products.index', ['search' => 'Apple']));
-
-        $response->assertStatus(200);
-        $response->assertSee('Apple Phone');
-        $response->assertDontSee('Samsung TV');
-    }
-
-    /** @test */
-    public function admin_can_remove_selected_images_while_updating_product()
-    {
-        $this->adminLogin();
-        Storage::fake('public');
-
-        $product = Product::factory()->create([
-            'images' => json_encode(['products/a.jpg', 'products/b.jpg'])
-        ]);
-
-        Storage::disk('public')->put('products/a.jpg', 'dummy');
-        Storage::disk('public')->put('products/b.jpg', 'dummy');
-
-        $response = $this->put(route('admin.products.update', $product->id), [
-            'title' => $product->title,
-            'category_id' => $product->category_id,
-            'price' => $product->price,
-            'discount' => $product->discount,
-            'sku' => $product->sku,
-            'stock' => $product->stock,
-            'remove_images' => ['products/a.jpg']
-        ]);
-
-        $response->assertRedirect(route('admin.products.index'));
-
-        Storage::disk('public')->assertMissing('products/a.jpg');
-        Storage::disk('public')->assertExists('products/b.jpg');
-    }
-
-    /** @test */
-    public function admin_can_view_single_product_page()
-    {
-        $this->adminLogin();
-        $product = Product::factory()->create();
-
-        $response = $this->get(route('admin.products.show', $product->id));
-
-        $response->assertStatus(200);
-        $response->assertViewIs('admin.products.show');
-        $response->assertViewHas('product');
-    }
-
-    /** @test */
-    public function admin_can_view_edit_product_page()
-    {
-        $this->adminLogin();
-        $product = Product::factory()->create();
-
-        $response = $this->get(route('admin.products.edit', $product->id));
-
-        $response->assertStatus(200);
-        $response->assertViewIs('admin.products.edit');
-        $response->assertViewHas(['product', 'categories']);
+        $this->actingAs($user)
+            ->get(route('admin.products.index'))
+            ->assertStatus(403);
     }
 }

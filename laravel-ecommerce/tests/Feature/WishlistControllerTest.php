@@ -7,12 +7,13 @@ use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class WishlistControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]    
     public function guest_is_redirected_when_viewing_wishlist()
     {
         $response = $this->get('/wishlist');
@@ -20,7 +21,7 @@ class WishlistControllerTest extends TestCase
         $response->assertRedirect('/login');
     }
 
-    /** @test */
+    #[Test]    
     public function user_can_view_wishlist_page()
     {
         $user = User::factory()->create();
@@ -31,7 +32,7 @@ class WishlistControllerTest extends TestCase
         $response->assertViewIs('frontend.wishlist.index');
     }
 
-    /** @test */
+    #[Test]    
     public function user_can_add_product_to_wishlist()
     {
         $user = User::factory()->create();
@@ -48,7 +49,7 @@ class WishlistControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]    
     public function user_cannot_add_duplicate_products_to_wishlist()
     {
         $user = User::factory()->create();
@@ -65,7 +66,7 @@ class WishlistControllerTest extends TestCase
         $response->assertSessionHas('warning', 'Product is already in your wishlist!');
     }
 
-    /** @test */
+    #[Test]    
     public function user_can_remove_product_from_wishlist()
     {
         $user = User::factory()->create();

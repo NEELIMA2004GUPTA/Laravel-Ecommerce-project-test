@@ -6,12 +6,13 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AdminOrderControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function admin_can_view_orders_page()
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -24,7 +25,7 @@ class AdminOrderControllerTest extends TestCase
         $response->assertViewHas('orders');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_view_single_order()
     {
         $admin = User::factory()->create(['role' => 'admin']);

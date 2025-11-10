@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AdminUserControllerTest extends TestCase
 {
@@ -17,7 +18,7 @@ class AdminUserControllerTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_view_user_list()
     {
         $admin = $this->admin();
@@ -28,7 +29,7 @@ class AdminUserControllerTest extends TestCase
         $response->assertViewIs('admin.users.index');
     }
 
-    /** @test */
+    #[Test]
     public function test_admin_can_block_and_unblock_user()
 {
     $admin = \App\Models\User::factory()->create(['role' => 'admin']);
@@ -52,7 +53,7 @@ class AdminUserControllerTest extends TestCase
 }
 
 
-    /** @test */
+    #[Test]
     public function admin_can_change_user_role()
     {
         $admin = $this->admin();
