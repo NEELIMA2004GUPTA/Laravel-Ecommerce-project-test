@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://omar-heady-paulina.ngrok-free.dev'),
+    'url' => env('APP_URL'),
 
     /*
     |--------------------------------------------------------------------------

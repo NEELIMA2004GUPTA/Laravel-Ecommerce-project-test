@@ -21,11 +21,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // Force all URLs to use APP_URL
-        URL::forceRootUrl(config('app.url'));
-
-        // If your ngrok URL uses HTTPS (it does)
-        URL::forceScheme('https');
+        
     }
 }
 

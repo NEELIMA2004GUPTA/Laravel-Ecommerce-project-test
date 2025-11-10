@@ -24,9 +24,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
-});
+// Route::middleware(['auth', 'verified'])->group(function () {
+//     Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
+// });
 
 Route::get('/verify-email', EmailVerificationPromptController::class)
     ->middleware('auth')
@@ -80,6 +80,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(funct
 });
 
 Route::middleware('auth')->group(function () {
+
+    Route::get('/dashboard', [MyDashboardController::class, 'dashboard'])->name('dashboard');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class,'password'])->name('profile.password');
