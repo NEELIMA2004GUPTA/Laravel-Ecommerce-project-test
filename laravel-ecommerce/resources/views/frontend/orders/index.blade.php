@@ -81,14 +81,17 @@
                         <div class="flex items-center gap-4 bg-gray-50 rounded-lg p-3 border">
 
                             @php
+                                $product = $item->product;
                                 $imgs = is_array($item->product->images)
                                     ? $item->product->images
                                     : json_decode($item->product->images, true);
                                 $img = $imgs[0] ?? null;
                             @endphp
 
-                            <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
-                                 class="w-16 h-16 object-cover rounded">
+                            <a href="{{ route('product.show', $product->slug) }}">
+                                <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
+                                        class="w-16 h-16 object-cover rounded cursor-pointer hover:scale-105 transition" />
+                            </a>
 
                             <div class="flex-1">
                                 <p class="font-medium">{{ $item->product->title }}</p>
