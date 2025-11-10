@@ -27,3 +27,4 @@ class SendWelcomeEmailTest extends TestCase
         Notification::assertSentTo($user, WelcomeEmail::class);
     }
 }
+
