@@ -122,14 +122,28 @@
 
                     <!-- Totals -->
                     @php
+                        // Original subtotal
                         $subTotal = $order->items->sum(fn($item) => $item->quantity * $item->price);
-                        $tax = ($subTotal * 5) / 100;
-                        $grandTotal = $subTotal + $tax;
+
+                        // Check if a discount exists (for newly placed orders)
+                        $discount = session()->get('coupon')['discount'] ?? ($subTotal - $order->total);
+    
+                        // Apply discount safely
+                        $totalAfterDiscount = max($subTotal - $discount, 0);
+
+                        // Tax (5% GST)
+                        $tax = ($totalAfterDiscount * 5) / 100;
+
+                        // Grand total including tax
+                        $grandTotal = $totalAfterDiscount + $tax;
                     @endphp
                     <div class="mt-4 text-right text-xl font-bold text-gray-800">
                         Subtotal: ₹{{ number_format($subTotal, 2) }} <br>
-                        Tax (5%): ₹{{ number_format($tax, 2) }} <br>
-                        Grand Total: ₹{{ number_format($grandTotal, 2) }}
+                        @if($discount > 0)
+                            Discount: -₹{{ number_format($discount, 2) }} <br>
+                        @endif
+                        Tax (5% GST): ₹{{ number_format($tax, 2) }} <br>
+                        Total Payable: ₹{{ number_format($grandTotal, 2) }}
                     </div>
 
                 </div>

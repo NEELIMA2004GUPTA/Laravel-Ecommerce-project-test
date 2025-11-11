@@ -7,7 +7,6 @@ use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\OrderItem;
-use App\Models\Coupon;
 use App\Models\User;
 use App\Notifications\NewOrderNotification;
 
@@ -38,9 +37,17 @@ class CheckoutController extends Controller
             return redirect('/cart')->with('error', 'Your cart is empty.');
         }
 
-        $total = array_reduce($cart, function ($sum, $item) {
+        // Calculate subtotal
+        $subtotal = array_reduce($cart, function ($sum, $item) {
             return $sum + ($item['price'] * $item['quantity']);
         }, 0);
+
+        // Check if a coupon is applied in session
+        $couponData = session()->get('coupon'); // e.g., ['code' => 'ABC123', 'discount' => 500]
+        $discount = $couponData['discount'] ?? 0;
+
+        // Final total after discount
+        $total = max($subtotal - $discount, 0); // prevent negative totals
 
         // Combine country code with phone
         $fullPhone = $request->country_code . $request->phone;
@@ -54,14 +61,16 @@ class CheckoutController extends Controller
             'address' => $request->address,
             'payment_method' => $request->payment_method,
             'notes' => $request->notes ?? null,
-            'total' => $total,
+            'total' => $total, // store total after discount
         ]);
 
+        // Notify admin
         $admin = User::where('role', 'admin')->first();
         if($admin){
             $admin->notify(new NewOrderNotification($order));
         }
 
+        // Save order items and reduce stock
         foreach ($cart as $productId => $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -70,16 +79,13 @@ class CheckoutController extends Controller
                 'price' => $item['price'],
             ]);
 
-        // Reduce stock
-        Product::where('id', $productId)->decrement('stock', $item['quantity']);
+            Product::where('id', $productId)->decrement('stock', $item['quantity']);
         }
 
-        // Empty cart session
-        session()->forget('cart');
+        // Clear cart and coupon session
+        session()->forget(['cart', 'coupon']);
 
         return redirect()->route('orders')->with('success', 'Order placed successfully!');
-    
-
     }
 
     public function cancelOrder(Order $order)
@@ -89,7 +95,7 @@ class CheckoutController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // allow cancellation only if Pending or Shipped
+        // allow cancellation only if Pending or Confirmed
         if (!in_array($order->status, ['Pending', 'Confirmed'])) {
             return back()->with('error', 'This order cannot be cancelled.');
         }
@@ -103,14 +109,10 @@ class CheckoutController extends Controller
             }
         }
 
-
-
         // Update status
         $order->status = 'Cancelled';
         $order->save();
 
-        return back()->with('success', 'Order cancelled successfully.');
+        return redirect()->route('orders')->with('success', 'Order cancelled successfully.');
     }
-
-
 }
