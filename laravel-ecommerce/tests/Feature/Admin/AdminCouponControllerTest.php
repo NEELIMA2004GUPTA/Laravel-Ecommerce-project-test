@@ -153,7 +153,7 @@ class AdminCouponControllerTest extends TestCase
         // Mock cart in session
         $this->withSession([
             'cart' => [
-                ['price' => 100, 'qty' => 1]
+                ['price' => 100, 'quantity' => 1]
             ]
         ]);
 
@@ -186,7 +186,7 @@ class AdminCouponControllerTest extends TestCase
         $coupon = Coupon::factory()->create(['min_amount' => 500, 'status' => 1]);
 
         $this->withSession([
-            'cart' => [['price' => 100, 'qty' => 1]]
+            'cart' => [['price' => 100, 'quantity' => 1]]
         ]);
 
         $response = $this->post(route('apply.coupon'), ['coupon_code' => $coupon->code]);
@@ -206,7 +206,7 @@ class AdminCouponControllerTest extends TestCase
         ]);
 
         $this->withSession([
-            'cart' => [['price' => 100, 'qty' => 1]]
+            'cart' => [['price' => 100, 'quantity' => 1]]
         ]);
 
         $response = $this->post(route('apply.coupon'), ['coupon_code' => $coupon->code]);
