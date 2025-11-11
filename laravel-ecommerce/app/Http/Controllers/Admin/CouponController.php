@@ -107,7 +107,7 @@ class CouponController extends Controller
         if (!$coupon)
             return back()->with('error', 'Invalid Coupon Code.');
 
-        $cartTotal = collect(session('cart', []))->sum(fn($item) => $item['price'] * $item['qty']);
+        $cartTotal = collect(session('cart', []))->sum(fn($item) => $item['price'] * $item['quantity']);
 
         if ($cartTotal < $coupon->min_amount)
             return back()->with('error', "Minimum order amount is ₹{$coupon->min_amount} to use this coupon.");
