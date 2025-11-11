@@ -114,13 +114,6 @@
         Total Items: <span id="cart-items" class="font-bold">{{ $items }}</span>
     </p>
 
-    @if(session()->has('coupon'))
-        <div class="flex justify-between text-green-600 font-semibold my-2">
-            <span>Coupon ({{ session('coupon.code') }})</span>
-            <span>- ₹{{ number_format($discountAmount, 2) }}</span>
-        </div>
-    @endif
-
     <div class="flex justify-between text-gray-700 my-2">
         <span>Subtotal:</span>
         <span id="cart-total">
@@ -132,6 +125,13 @@
         <span>Tax (5% GST):</span>
         <span id="cart-tax">₹{{ number_format($tax, 2) }}</span>
     </div>
+    
+    @if(session()->has('coupon'))
+        <div class="flex justify-between text-green-600 font-semibold my-2">
+            <span>Coupon ({{ session('coupon.code') }})</span>
+            <span>- ₹{{ number_format($discountAmount, 2) }}</span>
+        </div>
+    @endif
 
     <p class="text-2xl font-bold text-green-600 mt-1">
         Amount Payable: <span id="cart-grand-total">₹{{ number_format($grandTotal, 2) }}</span>

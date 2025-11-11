@@ -96,8 +96,14 @@ class CheckoutController extends Controller
 
         // Return stock
         foreach ($order->items as $item) {
-            $item->product->increment('stock', $item->quantity);
+            $product = Product::find($item->product_id);
+            if ($product) {
+                $product->stock += $item->quantity;
+                $product->save();
+            }
         }
+
+
 
         // Update status
         $order->status = 'Cancelled';
