@@ -78,7 +78,7 @@
             @php
                 $variants = [];
                 if (!empty($product->variants)) {
-                    $raw = json_decode($product->variants, true);
+                    $raw = is_array($product->variants) ? $product->variants : json_decode($product->variants, true);
 
                         if (is_array($raw)) {
                             foreach ($raw as $item) {
