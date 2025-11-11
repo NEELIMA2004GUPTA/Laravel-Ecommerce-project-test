@@ -125,8 +125,7 @@
         <span>Tax (5% GST):</span>
         <span id="cart-tax">₹{{ number_format($tax, 2) }}</span>
     </div>
-    
-    @if(session()->has('coupon'))
+        @if(session()->has('coupon'))
         <div class="flex justify-between text-green-600 font-semibold my-2">
             <span>Coupon ({{ session('coupon.code') }})</span>
             <span>- ₹{{ number_format($discountAmount, 2) }}</span>
