@@ -145,7 +145,6 @@
                         Tax (5% GST): ₹{{ number_format($tax, 2) }} <br>
                         Total Payable: ₹{{ number_format($grandTotal, 2) }}
                     </div>
-
                 </div>
                 @endforeach
             </div>
