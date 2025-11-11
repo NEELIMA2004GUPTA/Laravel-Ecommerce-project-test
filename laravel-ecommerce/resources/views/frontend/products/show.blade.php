@@ -159,7 +159,7 @@
                         <label for="quantity" class="font-medium">Quantity Added in Cart :</label>
                         <input 
                             type="number" 
-                            id="quantity" 
+                            id="quantityInput"
                             name="quantity" 
                             value="{{ $currentQty }}" 
                             min="0" 
@@ -172,7 +172,7 @@
                         <p class="text-red-500 text-sm mt-1">Maximum stock reached.</p>
                     @endif
 
-                    <button type="submit" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <button  id="addToCartBtn"  type="submit" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                         Add to Cart
                     </button>
                 </form>
@@ -258,5 +258,23 @@
 
 <!-- ALPINE.JS FOR INTERACTIVITY -->
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+    const quantityInput = document.getElementById('quantityInput');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+
+    function toggleButton() {
+        if (quantityInput.value <= 0 || quantityInput.value === "") {
+            addToCartBtn.disabled = true;
+            addToCartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            addToCartBtn.disabled = false;
+            addToCartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    }
+
+    toggleButton(); // page load pe check
+
+    quantityInput.addEventListener('input', toggleButton);
+</script>
 
 </x-app-layout>
