@@ -4,6 +4,11 @@
 <h2 class="text-2xl font-bold mb-6">🛒 Your Shopping Cart</h2>
 
 <div id="cart-messages"></div>
+@if (session('success'))
+    <div class="bg-green-100 text-green-800 p-2 rounded mb-3">
+        {{ session('success') }}
+    </div>
+@endif
 
 @if(count($cart) > 0)
 <table class="w-full border text-left rounded-lg overflow-hidden">
