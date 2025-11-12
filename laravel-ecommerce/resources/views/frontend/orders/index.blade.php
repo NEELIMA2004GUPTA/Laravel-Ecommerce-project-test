@@ -111,6 +111,7 @@
                                     <img src="{{ asset('storage/' . $media) }}" 
                                          class="w-16 h-16 object-cover rounded cursor-pointer hover:scale-105 transition" />
                                 @endif
+                                
                             </a>
 
                             <div class="flex-1">
