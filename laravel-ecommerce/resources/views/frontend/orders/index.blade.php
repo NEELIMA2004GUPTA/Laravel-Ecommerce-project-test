@@ -85,12 +85,32 @@
                                 $imgs = is_array($item->product->images)
                                     ? $item->product->images
                                     : json_decode($item->product->images, true);
-                                $img = $imgs[0] ?? null;
+                                $media = $imgs[0] ?? null;
+
+                                $isVideo = false;
+                                $extension = null;
+
+                                if ($media) {
+                                    $extension = pathinfo($media, PATHINFO_EXTENSION);
+                                    $isVideo = in_array(strtolower($extension), ['mp4', 'webm', 'ogg']);
+                                }
                             @endphp
 
                             <a href="{{ route('product.show', $product->slug) }}">
-                                <img src="{{ $img ? asset('storage/' . $img) : asset('/no-image.png') }}"
-                                        class="w-16 h-16 object-cover rounded cursor-pointer hover:scale-105 transition" />
+                                @if($isVideo)
+                                    <div class="relative w-16 h-16 cursor-pointer">
+                                        <video class="w-full h-full object-cover rounded"
+                                            muted
+                                            preload="metadata"
+                                            playsinline
+                                            data-url="{{ route('product.show', $product->slug) }}">
+                                            <source src="{{ asset('storage/' . $media) }}" type="video/{{ $extension }}">
+                                        </video>
+                                    </div>
+                                @else
+                                    <img src="{{ asset('storage/' . $media) }}" 
+                                         class="w-16 h-16 object-cover rounded cursor-pointer hover:scale-105 transition" />
+                                @endif
                             </a>
 
                             <div class="flex-1">
