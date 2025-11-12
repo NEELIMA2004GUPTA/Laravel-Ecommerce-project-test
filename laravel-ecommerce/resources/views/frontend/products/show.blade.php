@@ -55,9 +55,20 @@
     </div>
 
         {{-- Product Info --}}
+        @php
+            $fullDesc = $product->description ?? 'No description available.';
+            $shortDesc = Str::words($fullDesc, 25, '...');
+        @endphp
+
         <div>
             <h2 class="text-3xl font-bold text-gray-800">{{ $product->title }}</h2>
-            <p class="text-gray-600 mt-2">{{ $product->description ?? 'No description available.' }}</p>
+            <p class="text-gray-600 mt-2">
+                <span class="short-desc">{{ $shortDesc }}</span>
+                <span class="full-desc hidden">{{ $fullDesc }}</span>
+                @if(Str::words($fullDesc, 25, null) !== $fullDesc)
+                    <a href="javascript:void(0);" class="text-blue-600 hover:underline ml-1 read-more">Read More</a>
+                @endif
+            </p>
 
             @php
                 $discounted = $product->discount ? $product->price - ($product->price * $product->discount / 100) : $product->price;
@@ -275,6 +286,18 @@
     toggleButton(); // page load pe check
 
     quantityInput.addEventListener('input', toggleButton);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.read-more').forEach(function(link){
+            link.addEventListener('click', function() {
+                let parent = this.closest('p');
+                parent.querySelector('.short-desc').classList.toggle('hidden');
+                parent.querySelector('.full-desc').classList.toggle('hidden');
+                this.innerText = this.innerText === 'Read More' ? 'Show Less' : 'Read More';
+            });
+        });
+    });
+
 </script>
 
 </x-app-layout>
