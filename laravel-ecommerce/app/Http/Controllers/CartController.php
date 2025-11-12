@@ -83,30 +83,28 @@ class CartController extends Controller
     }
 
     public function remove(Product $product)
-    {
-        $cart = session()->get('cart', []);
-        unset($cart[$product->id]);
-        session()->put('cart', $cart);
+{
+    $cart = session()->get('cart', []);
+    unset($cart[$product->id]);
+    session()->put('cart', $cart);
 
-        $total = 0;
-        $items = 0;
-        foreach($cart as $item){
-            $total += $item['price'] * $item['quantity'];
-            $items += $item['quantity'];
-        }
-
-        $discountAmount = session('coupon.discount') ?? 0;
-        $subTotal = $total - $discountAmount;
-        $tax = $subTotal * 0.05;
-        $grandTotal = $subTotal + $tax;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Item removed!',
-            'total' => number_format($subTotal,2),
-            'tax' => number_format($tax,2),
-            'grandTotal' => number_format($grandTotal,2),
-            'totalItems' => $items
-        ]);
+    // Recalculate totals
+    $total = 0;
+    $items = 0;
+    foreach ($cart as $item) {
+        $total += $item['price'] * $item['quantity'];
+        $items += $item['quantity'];
     }
+
+    $discountAmount = session('coupon.discount') ?? 0;
+    $subTotal = $total - $discountAmount;
+    $tax = $subTotal * 0.05;
+    $grandTotal = $subTotal + $tax;
+
+    // ✅ Return with flash message instead of JSON
+    return redirect()
+        ->back()
+        ->with('success', 'Item removed successfully!');
+}
+
 }
