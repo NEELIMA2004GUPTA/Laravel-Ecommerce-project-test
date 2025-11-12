@@ -29,6 +29,7 @@ class CartController extends Controller
 
             $cart[$product->id] = [
                 'title' => $product->title,
+                'slug' => $product->slug,
                 'original_price' => $product->price,
                 'price' => $discountedPrice,
                 'discount' => $product->discount,

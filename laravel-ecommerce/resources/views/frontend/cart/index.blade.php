@@ -31,7 +31,11 @@
                 $items += $item['quantity'];
             @endphp
             <tr class="border-b hover:bg-gray-50">
-                <td class="p-3 font-medium">{{ $item['title'] }}</td>
+                <td class="p-3 font-medium">
+                    <a href="{{ route('product.show', $item['slug']) }}" class="text-blue-600 hover:underline">
+                        {{ $item['title'] }}
+                    </a>
+                </td>
                 <td class="p-3">
                     <form method="POST" action="{{ route('cart.update', $id) }}" class="flex items-center gap-2">
                         @csrf
