@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class CouponController extends Controller
 {
@@ -98,35 +99,65 @@ class CouponController extends Controller
         return redirect()->route('admin.coupons.index')->with('success', 'Coupon Deleted Successfully!');
     }
 
-    public function applyCoupon(Request $request){
-
+    public function applyCoupon(Request $request)
+    {
         $coupon = Coupon::where('code', $request->coupon_code)
-        ->where('status', 1)
-        ->first();
+            ->where('status', 1)
+            ->first();
 
-        if (!$coupon)
-            return back()->with('error', 'Invalid Coupon Code.');
+        if (!$coupon) {
+            return response()->json(['error' => 'Invalid Coupon Code.']);
+        }
 
-        $cartTotal = collect(session('cart', []))->sum(fn($item) => $item['price'] * $item['quantity']);
+        $cart = session('cart', []);
+        $cartTotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-        if ($cartTotal < $coupon->min_amount)
-            return back()->with('error', "Minimum order amount is ₹{$coupon->min_amount} to use this coupon.");
+        if ($cartTotal < $coupon->min_amount) {
+            return response()->json(['error' => "Minimum order amount is ₹{$coupon->min_amount} to use this coupon."]);
+        }
 
-        if ($coupon->expires_at && $coupon->expires_at < now())
-            return back()->with('error', 'This coupon has expired.');
+        if ($coupon->expires_at && $coupon->expires_at < now()) {
+            return response()->json(['error' => 'This coupon has expired.']);
+        }
 
         session()->put('coupon', [
             'code' => $coupon->code,
             'discount' => $coupon->discount
         ]);
 
-        return back()->with('success', 'Coupon Applied Successfully!');
+        $discountAmount = $coupon->discount;
+        $subTotal = $cartTotal - $discountAmount;
+        $tax = $subTotal * 0.05;
+        $grandTotal = $subTotal + $tax;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Coupon Applied Successfully!',
+            'subTotal' => number_format($subTotal, 2),
+            'tax' => number_format($tax, 2),
+            'grandTotal' => number_format($grandTotal, 2),
+            'discount' => number_format($discountAmount, 2),
+            'code' => $coupon->code
+        ]);
     }
 
     public function removeCoupon()
     {
         session()->forget('coupon');
-        return back()->with('success', 'Coupon removed successfully!');
+
+        $cart = session('cart', []);
+        $cartTotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $subTotal = $cartTotal;
+        $tax = $subTotal * 0.05;
+        $grandTotal = $subTotal + $tax;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Coupon removed successfully!',
+            'subTotal' => number_format($subTotal, 2),
+            'tax' => number_format($tax, 2),
+            'grandTotal' => number_format($grandTotal, 2),
+        ]);
     }
 
 }
