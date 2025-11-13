@@ -162,5 +162,4 @@ document.getElementById('remove-coupon-btn').addEventListener('click', function(
     });
 });
 </script>
-
 </x-app-layout>
