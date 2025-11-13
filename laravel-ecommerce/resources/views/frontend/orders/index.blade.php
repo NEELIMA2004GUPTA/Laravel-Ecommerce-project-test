@@ -54,13 +54,28 @@
                                 @endif
                             </span>
 
-                            @if(in_array($order->status, ['Pending','Confirmed']))
+                            <!-- @if(in_array($order->status, ['Pending','Confirmed']))
                                 <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
                                     @csrf
                                     <button class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">
                                         Cancel Order
                                     </button>
                                 </form>
+                            @endif -->
+                            @if(in_array($order->status, ['Pending','Confirmed']))
+                                <div class="flex gap-2">
+                                <form action="{{ route('orders.cancel', $order->id) }}" method="POST">
+                                @csrf
+                                    <button class="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded">
+                                        Cancel Order
+                                    </button>
+                                </form>
+
+                                <button data-toggle="collapse" data-target="#editOrder-{{ $order->id }}"
+                                    class="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded">
+                                        Edit Details
+                                </button>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -72,6 +87,56 @@
                         <p><strong>Address:</strong> {{ $order->address }}, {{ $order->pincode }}</p>
                         <p><strong>Payment Method:</strong> {{ ucfirst($order->payment_method) }}</p>
                     </div>
+
+                    @if(in_array($order->status, ['Pending','Confirmed']))
+                        <div id="editOrder-{{ $order->id }}" class="mt-4 border p-4 rounded bg-gray-50 hidden">
+                        <form action="{{ route('orders.update', $order->id) }}" method="POST" class="space-y-3">
+                        @csrf
+                        @method('PUT')
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" name="name" value="{{ $order->name }}"
+                                class="mt-1 w-full border rounded p-2 focus:ring focus:ring-blue-200" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="text" name="phone" value="{{ $order->phone }}"
+                                class="mt-1 w-full border rounded p-2 focus:ring focus:ring-blue-200" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Address</label>
+                            <textarea name="address"
+                                class="mt-1 w-full border rounded p-2 focus:ring focus:ring-blue-200" required>{{ $order->address }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Pincode</label>
+                            <input type="text" name="pincode" value="{{ $order->pincode }}"
+                                class="mt-1 w-full border rounded p-2 focus:ring focus:ring-blue-200" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Payment Method</label>
+                            <select name="payment_method"
+                                class="mt-1 w-full border rounded p-2 focus:ring focus:ring-blue-200" required>
+                                    <option value="COD" {{ $order->payment_method == 'COD' ? 'selected' : '' }}>Cash on Delivery</option>
+                                    <option value="UPI" {{ $order->payment_method == 'UPI' ? 'selected' : '' }}>UPI</option>
+                                    <option value="CARD" {{ $order->payment_method == 'Card' ? 'selected' : '' }}>Card</option>
+                            </select>
+                        </div>
+
+                        <div class="text-right">
+                        <button type="submit"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded">
+                                Save Changes
+                        </button>
+                        </div>
+                    </form>
+                    </div>
+                @endif
 
                     <!-- Items List -->
                     <div class="mt-5 border-t pt-4 space-y-4">

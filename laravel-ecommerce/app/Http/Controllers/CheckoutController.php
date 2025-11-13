@@ -115,4 +115,26 @@ class CheckoutController extends Controller
 
         return redirect()->route('orders')->with('success', 'Order cancelled successfully.');
     }
+    public function update(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        // Allow editing only if status is Pending or Confirmed
+        if (!in_array($order->status, ['Pending', 'Confirmed'])) {
+            return back()->with('error', 'You cannot edit details after the order is shipped.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:15',
+            'address' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'payment_method' => 'required|in:COD,UPI,CARD',
+        ]);
+
+        $order->update($validated);
+
+        return back()->with('success', 'Order details updated successfully.');
+    }
+
 }

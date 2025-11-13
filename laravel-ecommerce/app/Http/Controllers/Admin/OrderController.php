@@ -50,4 +50,6 @@ class OrderController extends Controller
 
         return redirect()->back()->with('success', 'Order updated successfully!');
     }
+
+    
 }

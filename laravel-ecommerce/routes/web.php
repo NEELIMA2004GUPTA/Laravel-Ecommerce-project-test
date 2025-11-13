@@ -133,6 +133,9 @@ Route::post('/orders/{order}/cancel', [CheckoutController::class, 'cancelOrder']
     ->middleware('auth')
     ->name('orders.cancel');
 
+Route::put('/orders/{order}/update', [CheckoutController::class, 'update'])->name('orders.update')->middleware('auth');
+
+
 require __DIR__.'/auth.php';
 
     
