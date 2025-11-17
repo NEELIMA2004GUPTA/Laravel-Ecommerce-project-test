@@ -1,0 +1,11 @@
+/vendor
+/node_modules
+/npm-debug.log
+/storage/logs
+/storage/framework/sessions
+/storage/framework/views
+# /.env
+/.git
+/.idea
+/.vscode
+/public/storage
