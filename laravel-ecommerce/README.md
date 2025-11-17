@@ -105,6 +105,6 @@ Shoppix can be run in a Docker container for easy setup:
    Inside the container (port 80): http://localhost
 
 <!--! Screenshot of the running container -->
-
+![DockerContainer](laravel-ecommerce\screenshots\Screenshot (15).png)
 
 <!-- HAPPY CODING -->
