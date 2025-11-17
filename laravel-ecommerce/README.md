@@ -1,61 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<!--! Shoppix - Laravel eCommerce Platform  -->
+Shoppix is a fully functional eCommerce platform built using Laravel, designed to provide a seamless shopping experience for users while offering comprehensive management capabilities for administrators.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<!--! Project Goal -->
 
-## About Laravel
+- The goal of Shoppix is to build a complete eCommerce system where:
+- Users can browse products, add them to the cart, checkout, and place orders.
+- Admins can manage products, categories, users, and orders efficiently.
+- Customers can apply coupons, write product reviews, and track their order history.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<!--! Project Modules & Features -->
+1. Authentication & User Management
+## Users:
+- Register, Login, Forgot Password
+- Profile Management (update info and password)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Admins:
+- Separate login and dashboard
+- Manage users (block/unblock, view orders, assign roles)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. Product & Category Management (Admin)
+- CRUD for Products: Title, Description, Price, Discount, SKU, Stock Quantity
+- Multiple Images and Videos using Laravel File Storage
+- Product Variants (Size, Color)
+- CRUD for Categories and Subcategories
 
-## Learning Laravel
+3. Product Browsing & Search (Users)
+- Home Page showing featured or latest products 
+- Product Detail Pages
+- Product Search and Filters (by category, price range, etc.)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+4. Shopping Cart & Wishlist
+- Add, Remove, and Update items in the cart (session based)
+- Add products to Wishlist (only for logged-in users)
+- View Cart summary (subtotal, total, tax, etc.)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+5. Checkout & Orders
+- Checkout form including address, payment method, and notes
+- Order summary before confirmation
+- After checkout: create order and reduce stock automatically
+- Order status management: Pending,Confirmed, Shipped, Delivered, Cancelled
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+6. Order History & Admin Dashboard
+## For Users:
+- View past orders and track status
+ 
+## Admins:
+- Dashboard with sales statistics, total users, most sold products
+- Manage Orders (update status, view details)
 
-## Laravel Sponsors
+7. Reviews & Ratings (Optional)
+- Logged-in users can post product reviews
+- Display average rating on product pages
+- Users can upload images, prerecorded videoes and record real-time video reviews using WebRTC
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+8. Coupons & Discounts (Optional)
+- Admin can create discount codes
+- Apply coupons at checkout
+- Validate expiry and usage limits
 
-### Premium Partners
+9. Notifications & Emails
+- Email notifications after order confirmation
+- Admin notification for new orders
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+10. Deployment & Optimization
+- Use .env for configuration
+- Docker support for local development (Dockerfile + docker-compose)
+- Optimized routes, caching, and database queries for performance
 
-## Contributing
+<!--! Technology Stack -->
+- **Backend**: Laravel 10
+- **Frontend**: Blade Templates 
+- **Database**: MySQL 
+- **Authentication**: Laravel Breeze 
+- **Docker**: For containerized development
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+<!--! Installation & Setup -->
+- Clone the repository:
+    git clone 
+    cd laravel-ecommerce
+- Install dependencies:
+    composer install
+    npm install && npm run dev
+- Copy .env file and generate application key:
+    cp .env.example .env
+    php artisan key:generate
+- Configure database in .env
+- Configure mail in .env
+- Run migrations and seeders:
+    php artisan migrate --seed
+- Start the development server:
+    php artisan serve
 
-## Code of Conduct
+<!--! Docker Usage -->
+Shoppix can be run in a Docker container for easy setup:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. Build Docker image:
+    docker-compose build
+2. Start containers:
+    docker-compose up -d
+3. Stop containers:
+    docker-compose down
+4. Access the application:
+   From your local machine: http://localhost:8000
+   Inside the container (port 80): http://localhost
 
-## Security Vulnerabilities
+<!--! Screenshot of the running container -->
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+<!-- HAPPY CODING -->
